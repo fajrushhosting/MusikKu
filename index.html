@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>HarmonyFlow · Music + Smart Ads</title>
+    <title>MusikKu · Nikmati musik di MusikKu</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -47,6 +47,10 @@
         .user-menu {
             display: flex; align-items: center; gap: 16px; background: #1f1f1f;
             padding: 6px 16px 6px 12px; border-radius: 40px;
+        }
+        .premium-badge {
+            background: #FFD700; color: #000; padding: 4px 12px; border-radius: 40px;
+            font-size: 12px; font-weight: bold;
         }
         .user-avatar { width: 32px; height: 32px; background: #1DB954; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: black; text-transform: uppercase; }
         .user-name { color: white; font-weight: 500; }
@@ -100,6 +104,7 @@
         .progress-fill { width: 0%; height: 100%; background: #1DB954; border-radius: 4px; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .vinyl-spin { animation: spin 4s linear infinite; }
+        .premium-badge-small { background: #FFD700; color: #000; border-radius: 40px; padding: 2px 8px; font-size: 10px; font-weight: bold; margin-left: 8px; }
         @media (max-width: 800px) { .spotify-layout { flex-direction: column; } .sidebar { width: 100%; display: flex; gap: 12px; overflow-x: auto; } }
     </style>
 </head>
@@ -109,7 +114,7 @@
 <div id="authOverlay" class="auth-overlay">
     <div class="auth-card">
         <div class="auth-logo"><i class="fas fa-headphones"></i></div>
-        <h2>HarmonyFlow</h2>
+        <h2>PremiumFlow</h2>
         <div id="loginPanel">
             <div class="input-group"><input type="email" id="loginEmail" placeholder="Email"></div>
             <div class="input-group"><input type="password" id="loginPassword" placeholder="Password"></div>
@@ -131,11 +136,12 @@
 <!-- MAIN APP -->
 <div id="mainApp" class="main-app">
     <div class="top-bar">
-        <div class="logo"><i class="fas fa-head-side-headphones"></i><span>HarmonyFlow</span></div>
+        <div class="logo"><i class="fas fa-head-side-headphones"></i><span>PremiumFlow</span></div>
         <div class="user-menu">
             <div class="user-avatar" id="userAvatar"></div>
             <span class="user-name" id="userNameDisplay"></span>
             <span class="user-role" id="userRoleBadge"></span>
+            <div id="premiumBadge" class="premium-badge" style="display:none;">⭐ PREMIUM</div>
             <button class="logout-btn" id="logoutBtnMain"><i class="fas fa-sign-out-alt"></i></button>
         </div>
     </div>
@@ -146,6 +152,7 @@
             <div class="playlist-header">PLAYLIST SAYA</div>
             <div id="userPlaylistList"></div>
             <div class="nav-item create-playlist-btn" id="createPlaylistBtn"><i class="fas fa-plus"></i> Buat Playlist Baru</div>
+            <div class="nav-item" id="premiumTabBtn"><i class="fas fa-crown"></i> Upgrade Premium</div>
         </div>
         <div class="main-content" id="mainContent">
             <div id="dynamicView"></div>
@@ -176,9 +183,9 @@
 </div>
 
 <script>
-    // ========== DATA & STORAGE ==========
-    let users = JSON.parse(localStorage.getItem('harmony_users')) || [];
-    let masterPlaylist = JSON.parse(localStorage.getItem('harmony_master_playlist')) || [];
+    // ---------- DATA & STORAGE ----------
+    let users = JSON.parse(localStorage.getItem('premiumflow_users')) || [];
+    let masterPlaylist = JSON.parse(localStorage.getItem('premiumflow_master_playlist')) || [];
     let currentUser = null;
     let currentSongIndex = 0;
     let isPlaying = false;
@@ -190,10 +197,12 @@
     let currentQueue = [];
     let currentView = 'home';
     let currentPlaylistId = null;
-    let adText = localStorage.getItem('harmony_ad_text') || "Tempat Top Up Game terpercaya hanya di FAJRUSHSTORE";
+    let isPremium = false;
+    
+    // Iklan
+    let adIntervalId = null; // Untuk iklan per detik
     let isAdPlaying = false;
-    let adTimeoutId = null;
-    let savedPlaybackPosition = 0; // untuk resume setelah iklan
+    let savedPlaybackPosition = 0;
 
     // DOM elements
     const authOverlay = document.getElementById('authOverlay');
@@ -216,19 +225,221 @@
     const userAvatar = document.getElementById('userAvatar');
     const userNameDisplay = document.getElementById('userNameDisplay');
     const userRoleBadge = document.getElementById('userRoleBadge');
+    const premiumBadge = document.getElementById('premiumBadge');
     const logoutBtnMain = document.getElementById('logoutBtnMain');
     const createPlaylistBtn = document.getElementById('createPlaylistBtn');
+    const premiumTabBtn = document.getElementById('premiumTabBtn');
 
     // Helper: save data
-    function saveUsers() { localStorage.setItem('harmony_users', JSON.stringify(users)); }
-    function saveMasterPlaylist() { localStorage.setItem('harmony_master_playlist', JSON.stringify(masterPlaylist)); }
-    function saveLiked() { localStorage.setItem(`harmony_liked_${currentUser.email}`, JSON.stringify(likedSongs)); }
-    function loadLiked() { likedSongs = JSON.parse(localStorage.getItem(`harmony_liked_${currentUser.email}`)) || []; }
-    function saveUserPlaylists() { localStorage.setItem(`harmony_playlists_${currentUser.email}`, JSON.stringify(userPlaylists)); }
-    function loadUserPlaylists() { userPlaylists = JSON.parse(localStorage.getItem(`harmony_playlists_${currentUser.email}`)) || []; }
-    function saveAdText() { localStorage.setItem('harmony_ad_text', adText); }
-
-    // Build queue for shuffle
+    function saveUsers() { localStorage.setItem('premiumflow_users', JSON.stringify(users)); }
+    function saveMasterPlaylist() { localStorage.setItem('premiumflow_master_playlist', JSON.stringify(masterPlaylist)); }
+    function saveLiked() { localStorage.setItem(`premiumflow_liked_${currentUser.email}`, JSON.stringify(likedSongs)); }
+    function loadLiked() { likedSongs = JSON.parse(localStorage.getItem(`premiumflow_liked_${currentUser.email}`)) || []; }
+    function saveUserPlaylists() { localStorage.setItem(`premiumflow_playlists_${currentUser.email}`, JSON.stringify(userPlaylists)); }
+    function loadUserPlaylists() { userPlaylists = JSON.parse(localStorage.getItem(`premiumflow_playlists_${currentUser.email}`)) || []; }
+    
+    // Premium check
+    function checkPremium() {
+        if (!currentUser) return false;
+        return currentUser.premium === true;
+    }
+    function updatePremiumUI() {
+        isPremium = checkPremium();
+        if (isPremium) {
+            premiumBadge.style.display = 'inline-flex';
+            stopAdInterval();
+        } else {
+            premiumBadge.style.display = 'none';
+            if (isPlaying && !isAdPlaying) startAdInterval();
+        }
+    }
+    
+    // Iklan per detik untuk non-premium (setiap detik lagu diputar, iklan muncul)
+    function playSecondAd() {
+        if (isAdPlaying) return;
+        if (!currentUser || currentUser.premium) return;
+        if (!isPlaying || !audio.src || audio.paused) return;
+        // Pause musik dan simpan posisi
+        if (isPlaying) {
+            savedPlaybackPosition = audio.currentTime;
+            audio.pause();
+            isPlaying = false;
+            updatePlayIcon();
+            miniVinyl.classList.remove('vinyl-spin');
+        }
+        isAdPlaying = true;
+        const utterance = new SpeechSynthesisUtterance("Tempat Top Up Game terpercaya hanya di FAJRUSHSTORE");
+        utterance.lang = 'id-ID';
+        utterance.onend = () => {
+            isAdPlaying = false;
+            // Resume musik dari posisi yang disimpan
+            if (audio.src && masterPlaylist.length && currentSongIndex >= 0) {
+                audio.currentTime = savedPlaybackPosition;
+                audio.play().then(() => {
+                    isPlaying = true;
+                    miniVinyl.classList.add('vinyl-spin');
+                    updatePlayIcon();
+                }).catch(e => console.log("resume error"));
+            }
+        };
+        utterance.onerror = () => {
+            isAdPlaying = false;
+            if (audio.src) {
+                audio.currentTime = savedPlaybackPosition;
+                audio.play();
+                isPlaying = true;
+                miniVinyl.classList.add('vinyl-spin');
+                updatePlayIcon();
+            }
+        };
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+    }
+    
+    function startAdInterval() {
+        if (adIntervalId) clearInterval(adIntervalId);
+        if (!currentUser || currentUser.premium) return;
+        if (!isPlaying || isAdPlaying) return;
+        adIntervalId = setInterval(() => {
+            if (isPlaying && !isAdPlaying && currentUser && !currentUser.premium) {
+                playSecondAd();
+            }
+        }, 1000); // Setiap 1 detik (per detik)
+    }
+    
+    function stopAdInterval() {
+        if (adIntervalId) {
+            clearInterval(adIntervalId);
+            adIntervalId = null;
+        }
+    }
+    
+    // Play function with premium check (tidak ada iklan untuk premium)
+    function playCurrent() {
+        if (!masterPlaylist.length) return;
+        if (currentSongIndex === -1) currentSongIndex = 0;
+        if (isPlaying && !isAdPlaying) return;
+        if (isAdPlaying) return;
+        
+        const playSong = () => {
+            if (audio.src) {
+                audio.play().then(() => {
+                    isPlaying = true;
+                    miniVinyl.classList.add('vinyl-spin');
+                    updatePlayIcon();
+                    if (!currentUser.premium) startAdInterval();
+                }).catch(e => console.log);
+            } else if (masterPlaylist[currentSongIndex]) {
+                loadSong(currentSongIndex);
+                audio.play().then(() => {
+                    isPlaying = true;
+                    miniVinyl.classList.add('vinyl-spin');
+                    updatePlayIcon();
+                    if (!currentUser.premium) startAdInterval();
+                });
+            }
+        };
+        
+        if (!currentUser.premium) {
+            // Non-premium: putar iklan dulu
+            if (isAdPlaying) return;
+            isAdPlaying = true;
+            const utterance = new SpeechSynthesisUtterance("Tempat Top Up Game terpercaya hanya di FAJRUSHSTORE");
+            utterance.lang = 'id-ID';
+            utterance.onend = () => {
+                isAdPlaying = false;
+                playSong();
+            };
+            utterance.onerror = () => {
+                isAdPlaying = false;
+                playSong();
+            };
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utterance);
+        } else {
+            playSong();
+        }
+    }
+    
+    function pauseCurrent() {
+        if (isAdPlaying) {
+            window.speechSynthesis.cancel();
+            isAdPlaying = false;
+        }
+        stopAdInterval();
+        audio.pause();
+        isPlaying = false;
+        miniVinyl.classList.remove('vinyl-spin');
+        updatePlayIcon();
+    }
+    
+    function loadSong(index) {
+        if (!masterPlaylist.length || index < 0 || index >= masterPlaylist.length) return false;
+        const song = masterPlaylist[index];
+        audio.src = song.url;
+        audio.load();
+        nowPlayingTitle.innerText = song.title;
+        nowPlayingArtist.innerText = song.artist;
+        if (isPlaying && !isAdPlaying) {
+            audio.play().catch(e=>console.log);
+            miniVinyl.classList.add('vinyl-spin');
+            if (!currentUser.premium) startAdInterval();
+        } else {
+            miniVinyl.classList.remove('vinyl-spin');
+        }
+        updatePlayIcon();
+        renderCurrentView();
+        return true;
+    }
+    
+    function nextTrack() {
+        if (!masterPlaylist.length) return;
+        pauseCurrent();
+        buildQueue();
+        let curIdxInQueue = currentQueue.findIndex(s => s.id === masterPlaylist[currentSongIndex]?.id);
+        if (curIdxInQueue === -1) curIdxInQueue = 0;
+        let nextPos = (curIdxInQueue + 1) % currentQueue.length;
+        if (repeatMode) {
+            playCurrent();
+            return;
+        }
+        const nextSong = currentQueue[nextPos];
+        if (nextSong) {
+            const newIdx = masterPlaylist.findIndex(s => s.id === nextSong.id);
+            if (newIdx !== -1) {
+                currentSongIndex = newIdx;
+                loadSong(currentSongIndex);
+                playCurrent();
+            }
+        } else {
+            pauseCurrent();
+        }
+    }
+    
+    function prevTrack() {
+        if (!masterPlaylist.length) return;
+        pauseCurrent();
+        buildQueue();
+        let curIdxInQueue = currentQueue.findIndex(s => s.id === masterPlaylist[currentSongIndex]?.id);
+        if (curIdxInQueue === -1) curIdxInQueue = 0;
+        let prevPos = (curIdxInQueue - 1 + currentQueue.length) % currentQueue.length;
+        const prevSong = currentQueue[prevPos];
+        if (prevSong) {
+            const newIdx = masterPlaylist.findIndex(s => s.id === prevSong.id);
+            if (newIdx !== -1) {
+                currentSongIndex = newIdx;
+                loadSong(currentSongIndex);
+                playCurrent();
+            }
+        }
+    }
+    
+    function updatePlayIcon() {
+        playPauseBtn.innerHTML = isPlaying ? '<i class="fas fa-pause-circle"></i>' : '<i class="fas fa-play-circle"></i>';
+    }
+    
+    function formatTime(sec) { if (isNaN(sec)) return "0:00"; let m = Math.floor(sec/60); let s = Math.floor(sec%60); return `${m}:${s<10?'0':''}${s}`; }
+    
     function buildQueue() {
         if (shuffleMode) {
             let indices = Array.from(Array(masterPlaylist.length).keys());
@@ -244,254 +455,29 @@
             currentSongIndex = 0;
         }
     }
-
-    // Schedule random ad while playing
-    function scheduleRandomAd() {
-        if (adTimeoutId) clearTimeout(adTimeoutId);
-        if (!currentUser || currentUser.role === 'admin') return; // admin no ads
-        if (!isPlaying || !audio.src || audio.paused || isAdPlaying) return;
-        // random interval between 30 and 120 seconds (30000 - 120000 ms)
-        const delay = Math.floor(Math.random() * (120000 - 30000 + 1) + 30000);
-        adTimeoutId = setTimeout(() => {
-            if (isPlaying && !isAdPlaying && currentUser && currentUser.role !== 'admin') {
-                playRandomAd();
-            }
-        }, delay);
-    }
-
-    function cancelRandomAd() {
-        if (adTimeoutId) {
-            clearTimeout(adTimeoutId);
-            adTimeoutId = null;
-        }
-    }
-
-    // Play ad (pause music, speak, then resume)
-    function playRandomAd() {
-        if (isAdPlaying) return;
-        if (!currentUser || currentUser.role === 'admin') return;
-        // Pause music and save position
-        if (isPlaying) {
-            savedPlaybackPosition = audio.currentTime;
-            audio.pause();
-            isPlaying = false;
-            updatePlayIcon();
-            miniVinyl.classList.remove('vinyl-spin');
-        } else {
-            savedPlaybackPosition = audio.currentTime;
-        }
-        isAdPlaying = true;
-        const utterance = new SpeechSynthesisUtterance(adText);
-        utterance.lang = 'id-ID';
-        utterance.onend = () => {
-            isAdPlaying = false;
-            // Resume music from saved position if there is a song loaded
-            if (audio.src && masterPlaylist.length && currentSongIndex >= 0) {
-                audio.currentTime = savedPlaybackPosition;
-                audio.play().then(() => {
-                    isPlaying = true;
-                    miniVinyl.classList.add('vinyl-spin');
-                    updatePlayIcon();
-                    scheduleRandomAd(); // reschedule after ad finishes
-                }).catch(e => console.log("resume error"));
-            } else {
-                // if no song, just reset
-                isPlaying = false;
-                updatePlayIcon();
-            }
-        };
-        utterance.onerror = () => {
-            isAdPlaying = false;
-            if (audio.src) {
-                audio.currentTime = savedPlaybackPosition;
-                audio.play().catch(e=>console.log);
-                isPlaying = true;
-                miniVinyl.classList.add('vinyl-spin');
-                updatePlayIcon();
-                scheduleRandomAd();
-            }
-        };
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(utterance);
-    }
-
-    // Main play function with ad on click
-    function playWithAd() {
-        if (!masterPlaylist.length) return;
-        if (currentSongIndex === -1) currentSongIndex = 0;
-        // If already playing and no ad, do nothing
-        if (isPlaying && !isAdPlaying) return;
-        // If ad is playing, don't interrupt
-        if (isAdPlaying) return;
-        // For non-admin, play ad first
-        if (currentUser && currentUser.role !== 'admin') {
-            if (isPlaying) {
-                // already playing, no need ad
-                return;
-            }
-            // Save position if any
-            savedPlaybackPosition = audio.currentTime;
-            isAdPlaying = true;
-            const utterance = new SpeechSynthesisUtterance(adText);
-            utterance.lang = 'id-ID';
-            utterance.onend = () => {
-                isAdPlaying = false;
-                // Resume or start from saved position
-                if (audio.src && masterPlaylist.length) {
-                    audio.currentTime = savedPlaybackPosition;
-                    audio.play().then(() => {
-                        isPlaying = true;
-                        miniVinyl.classList.add('vinyl-spin');
-                        updatePlayIcon();
-                        scheduleRandomAd();
-                    }).catch(e => console.log);
-                } else {
-                    // load current song
-                    if (masterPlaylist[currentSongIndex]) {
-                        loadSong(currentSongIndex);
-                        audio.play().then(() => {
-                            isPlaying = true;
-                            miniVinyl.classList.add('vinyl-spin');
-                            updatePlayIcon();
-                            scheduleRandomAd();
-                        }).catch(e => console.log);
-                    }
-                }
-            };
-            utterance.onerror = () => {
-                isAdPlaying = false;
-                // fallback: langsung play
-                if (audio.src) {
-                    audio.play().then(() => { isPlaying=true; updatePlayIcon(); scheduleRandomAd(); });
-                } else if (masterPlaylist[currentSongIndex]) {
-                    loadSong(currentSongIndex);
-                    audio.play().then(() => { isPlaying=true; updatePlayIcon(); scheduleRandomAd(); });
-                }
-            };
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(utterance);
-        } else {
-            // admin langsung play
-            if (audio.src) {
-                audio.play().then(() => {
-                    isPlaying = true;
-                    miniVinyl.classList.add('vinyl-spin');
-                    updatePlayIcon();
-                    scheduleRandomAd();
-                }).catch(e => console.log);
-            } else if (masterPlaylist[currentSongIndex]) {
-                loadSong(currentSongIndex);
-                audio.play().then(() => {
-                    isPlaying = true;
-                    miniVinyl.classList.add('vinyl-spin');
-                    updatePlayIcon();
-                    scheduleRandomAd();
-                });
-            }
-        }
-    }
-
-    function pauseCurrent() {
-        if (isAdPlaying) {
-            window.speechSynthesis.cancel();
-            isAdPlaying = false;
-        }
-        cancelRandomAd();
-        audio.pause();
-        isPlaying = false;
-        miniVinyl.classList.remove('vinyl-spin');
-        updatePlayIcon();
-    }
-
-    function loadSong(index) {
-        if (!masterPlaylist.length || index < 0 || index >= masterPlaylist.length) return false;
-        const song = masterPlaylist[index];
-        audio.src = song.url;
-        audio.load();
-        nowPlayingTitle.innerText = song.title;
-        nowPlayingArtist.innerText = song.artist;
-        if (isPlaying && !isAdPlaying) {
-            audio.play().catch(e=>console.log);
-            miniVinyl.classList.add('vinyl-spin');
-            scheduleRandomAd();
-        } else {
-            miniVinyl.classList.remove('vinyl-spin');
-        }
-        updatePlayIcon();
-        renderCurrentView();
-        return true;
-    }
-
-    function nextTrack() {
-        if (!masterPlaylist.length) return;
-        pauseCurrent(); // stop current and cancel ad schedule
-        buildQueue();
-        let curIdxInQueue = currentQueue.findIndex(s => s.id === masterPlaylist[currentSongIndex]?.id);
-        if (curIdxInQueue === -1) curIdxInQueue = 0;
-        let nextPos = (curIdxInQueue + 1) % currentQueue.length;
-        if (repeatMode) {
-            // repeat one
-            playWithAd(); // will play same song with ad
-            return;
-        }
-        const nextSong = currentQueue[nextPos];
-        if (nextSong) {
-            const newIdx = masterPlaylist.findIndex(s => s.id === nextSong.id);
-            if (newIdx !== -1) {
-                currentSongIndex = newIdx;
-                loadSong(currentSongIndex);
-                playWithAd();
-            }
-        } else {
-            pauseCurrent();
-        }
-    }
-
-    function prevTrack() {
-        if (!masterPlaylist.length) return;
-        pauseCurrent();
-        buildQueue();
-        let curIdxInQueue = currentQueue.findIndex(s => s.id === masterPlaylist[currentSongIndex]?.id);
-        if (curIdxInQueue === -1) curIdxInQueue = 0;
-        let prevPos = (curIdxInQueue - 1 + currentQueue.length) % currentQueue.length;
-        const prevSong = currentQueue[prevPos];
-        if (prevSong) {
-            const newIdx = masterPlaylist.findIndex(s => s.id === prevSong.id);
-            if (newIdx !== -1) {
-                currentSongIndex = newIdx;
-                loadSong(currentSongIndex);
-                playWithAd();
-            }
-        }
-    }
-
-    function updatePlayIcon() {
-        playPauseBtn.innerHTML = isPlaying ? '<i class="fas fa-pause-circle"></i>' : '<i class="fas fa-play-circle"></i>';
-    }
-
-    function formatTime(sec) { if (isNaN(sec)) return "0:00"; let m = Math.floor(sec/60); let s = Math.floor(sec%60); return `${m}:${s<10?'0':''}${s}`; }
-
+    
     // Render views
     function renderCurrentView() {
         if (currentView === 'home') renderHome();
         else if (currentView === 'liked') renderLiked();
         else if (currentView === 'playlist_list') renderPlaylistList();
         else if (currentView === 'playlist_detail' && currentPlaylistId) renderPlaylistDetail(currentPlaylistId);
+        else if (currentView === 'premium') renderPremiumPage();
     }
-
+    
     function renderHome() {
         dynamicView.innerHTML = `<div class="greeting">🎵 Semua Lagu</div><div id="homeTrackList" class="track-grid"></div>`;
         const container = document.getElementById('homeTrackList');
         renderTrackList(container, masterPlaylist);
     }
-
+    
     function renderLiked() {
         const likedSongsData = masterPlaylist.filter(s => likedSongs.includes(s.id));
         dynamicView.innerHTML = `<div class="greeting">❤️ Lagu Disukai</div><div id="likedTrackList" class="track-grid"></div>`;
         const container = document.getElementById('likedTrackList');
         renderTrackList(container, likedSongsData);
     }
-
+    
     function renderTrackList(container, songs) {
         container.innerHTML = '';
         if (!songs.length) { container.innerHTML = '<div style="text-align:center; padding:40px; color:#aaa;">Belum ada lagu.</div>'; return; }
@@ -505,7 +491,8 @@
                 </div>
                 <div class="track-actions">
                     <button class="like-song" data-id="${song.id}"><i class="fas ${likedSongs.includes(song.id) ? 'fa-heart' : 'fa-heart'}" style="color:${likedSongs.includes(song.id) ? '#1DB954' : '#b3b3b3'}"></i></button>
-                    ${currentView === 'playlist_detail' ? `<button class="remove-from-playlist" data-id="${song.id}"><i class="fas fa-trash-alt"></i></button>` : ''}
+                    ${currentUser && currentUser.role === 'admin' ? `<button class="delete-master" data-id="${song.id}"><i class="fas fa-trash-alt"></i></button>` : ''}
+                    ${currentView === 'playlist_detail' ? `<button class="remove-from-playlist" data-id="${song.id}"><i class="fas fa-minus-circle"></i></button>` : ''}
                 </div>
             `;
             row.querySelector('.track-info').addEventListener('click', () => {
@@ -513,7 +500,7 @@
                 if (globalIdx !== -1) {
                     currentSongIndex = globalIdx;
                     loadSong(currentSongIndex);
-                    playWithAd();
+                    playCurrent();
                 }
             });
             row.querySelector('.like-song')?.addEventListener('click', (e) => {
@@ -523,6 +510,19 @@
                 saveLiked();
                 renderCurrentView();
             });
+            if (currentUser && currentUser.role === 'admin') {
+                row.querySelector('.delete-master')?.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (confirm(`Hapus lagu "${song.title}" secara permanen?`)) {
+                        masterPlaylist = masterPlaylist.filter(s => s.id !== song.id);
+                        saveMasterPlaylist();
+                        renderHome();
+                        if (currentSongIndex >= masterPlaylist.length) currentSongIndex = Math.max(0, masterPlaylist.length-1);
+                        if (masterPlaylist.length) loadSong(currentSongIndex);
+                        else pauseCurrent();
+                    }
+                });
+            }
             if (currentView === 'playlist_detail') {
                 row.querySelector('.remove-from-playlist')?.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -537,7 +537,7 @@
             container.appendChild(row);
         });
     }
-
+    
     function renderPlaylistList() {
         dynamicView.innerHTML = `<div class="greeting">📁 Playlist Saya</div><div id="playlistsContainer" style="display:flex; flex-direction:column; gap:12px;"></div>`;
         const container = document.getElementById('playlistsContainer');
@@ -577,7 +577,7 @@
             });
         });
     }
-
+    
     function renderPlaylistDetail(playlistId) {
         const playlist = userPlaylists.find(p => p.id === playlistId);
         if (!playlist) { currentView = 'playlist_list'; renderPlaylistList(); return; }
@@ -610,13 +610,51 @@
             modal.querySelector('#closeModal')?.addEventListener('click', () => document.body.removeChild(modal));
         });
     }
-
+    
+    function renderPremiumPage() {
+        dynamicView.innerHTML = `
+            <div class="greeting">⭐ Upgrade ke Premium</div>
+            <div style="background:#1e1e1e; border-radius:24px; padding:30px; text-align:center;">
+                <i class="fas fa-crown" style="font-size:64px; color:#FFD700; margin-bottom:20px;"></i>
+                <h2 style="color:white;">Nikmati Musik Tanpa Iklan!</h2>
+                <p style="color:#b3b3b3; margin:20px 0;">Cukup 10.000 / bulan</p>
+                <div style="margin:30px auto; max-width:300px;">
+                    <img src="https://files.catbox.moe/4sn2sc.png" alt="QRIS Payment" style="width:100%; background:white; padding:20px; border-radius:20px;" onerror="this.src='https://via.placeholder.com/300?text=QRIS+Code'">
+                    <p style="margin-top:10px; font-size:12px;">Scan QRIS untuk pembayaran Rp10.000</p>
+                </div>
+                <button id="confirmPaymentBtn" style="background:#FFD700; border:none; padding:14px 30px; border-radius:40px; font-weight:bold; cursor:pointer;">Konfirmasi Pembayaran</button>
+                <div id="paymentMsg" style="margin-top:20px; color:#1DB954;"></div>
+            </div>
+        `;
+        document.getElementById('confirmPaymentBtn')?.addEventListener('click', () => {
+            if (currentUser && currentUser.role === 'admin') {
+                // Admin bisa langsung approve
+                currentUser.premium = true;
+                currentUser.premiumApproved = true;
+                saveUsers();
+                updatePremiumUI();
+                document.getElementById('paymentMsg').innerText = "✅ Premium aktif! Silakan kembali ke Beranda.";
+                setTimeout(() => { currentView = 'home'; renderHome(); updateSidebarActive(); }, 2000);
+            } else {
+                // User biasa: kirim notifikasi ke admin (simpan di localStorage)
+                let pendingRequests = JSON.parse(localStorage.getItem('premiumflow_pending')) || [];
+                if (!pendingRequests.includes(currentUser.email)) {
+                    pendingRequests.push(currentUser.email);
+                    localStorage.setItem('premiumflow_pending', JSON.stringify(pendingRequests));
+                    document.getElementById('paymentMsg').innerText = "✅ Pembayaran dikonfirmasi. Menunggu persetujuan admin.";
+                } else {
+                    document.getElementById('paymentMsg').innerText = "⏳ Permintaan sudah dikirim. Tunggu admin menyetujui.";
+                }
+            }
+        });
+    }
+    
     function updateSidebarActive() {
         document.querySelectorAll('.nav-item[data-view]').forEach(n => n.classList.remove('active'));
         if (currentView === 'home') document.querySelector('[data-view="home"]').classList.add('active');
         else if (currentView === 'liked') document.querySelector('[data-view="liked"]').classList.add('active');
     }
-
+    
     function refreshSidebarPlaylists() {
         userPlaylistListDiv.innerHTML = '';
         userPlaylists.forEach(pl => {
@@ -632,9 +670,76 @@
             userPlaylistListDiv.appendChild(plDiv);
         });
     }
-
+    
     function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
-
+    
+    // Admin panel (hapus lagu sudah di tombol delete di track)
+    function addAdminPanel() {
+        if (document.getElementById('adminPanel')) return;
+        const adminHtml = `<div id="adminPanel" class="admin-panel"><h3><i class="fas fa-crown"></i> Admin Panel</h3>
+            <div class="admin-form"><input type="text" id="adminUrl" placeholder="Link MP3 (Catbox)"><input type="text" id="adminTitle" placeholder="Judul"><input type="text" id="adminArtist" placeholder="Artis"><button id="adminAddSongBtn">Tambah Lagu</button></div>
+            <div style="margin-top:20px;"><h4>Konfirmasi Premium User</h4><div id="pendingRequestsList"></div></div>
+            <div id="adminMsg" style="color:#1DB954; font-size:12px; margin-top:8px;"></div>
+        </div>`;
+        const mainContent = document.querySelector('.main-content');
+        mainContent.insertAdjacentHTML('afterbegin', adminHtml);
+        document.getElementById('adminAddSongBtn')?.addEventListener('click', () => {
+            let url = document.getElementById('adminUrl').value.trim();
+            let title = document.getElementById('adminTitle').value.trim();
+            let artist = document.getElementById('adminArtist').value.trim();
+            if (!url) { adminMsg.innerText = "Link MP3 wajib"; return; }
+            if (!url.match(/\.mp3$/i)) { adminMsg.innerText = "URL harus .mp3"; return; }
+            if (!title) title = "Lagu Baru";
+            if (!artist) artist = "Unknown";
+            const newId = Date.now();
+            masterPlaylist.push({ id: newId, url, title, artist });
+            saveMasterPlaylist();
+            renderCurrentView();
+            document.getElementById('adminUrl').value = '';
+            document.getElementById('adminTitle').value = '';
+            document.getElementById('adminArtist').value = '';
+            document.getElementById('adminMsg').innerText = "Lagu ditambahkan!";
+            setTimeout(() => document.getElementById('adminMsg').innerText = '', 2000);
+        });
+        refreshPendingRequests();
+    }
+    
+    function refreshPendingRequests() {
+        const pendingRequests = JSON.parse(localStorage.getItem('premiumflow_pending')) || [];
+        const container = document.getElementById('pendingRequestsList');
+        if (!container) return;
+        container.innerHTML = '';
+        if (pendingRequests.length === 0) {
+            container.innerHTML = '<p style="color:#aaa;">Tidak ada permintaan premium.</p>';
+            return;
+        }
+        pendingRequests.forEach(email => {
+            const div = document.createElement('div');
+            div.style.display = 'flex'; div.style.justifyContent = 'space-between'; div.style.alignItems = 'center'; div.style.marginBottom = '8px';
+            div.innerHTML = `<span>${email}</span><button class="approvePremium" data-email="${email}" style="background:#1DB954; border:none; padding:4px 12px; border-radius:40px;">Setujui</button>`;
+            container.appendChild(div);
+        });
+        document.querySelectorAll('.approvePremium').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const email = btn.dataset.email;
+                let user = users.find(u => u.email === email);
+                if (user) {
+                    user.premium = true;
+                    user.premiumApproved = true;
+                    saveUsers();
+                    let pending = JSON.parse(localStorage.getItem('premiumflow_pending')) || [];
+                    pending = pending.filter(e => e !== email);
+                    localStorage.setItem('premiumflow_pending', JSON.stringify(pending));
+                    refreshPendingRequests();
+                    if (currentUser && currentUser.email === email) {
+                        updatePremiumUI();
+                        alert("Akun Anda telah diaktifkan premium!");
+                    }
+                }
+            });
+        });
+    }
+    
     // Audio event handlers
     audio.addEventListener('timeupdate', () => {
         if (audio.duration && !isNaN(audio.duration)) {
@@ -644,25 +749,19 @@
         }
     });
     audio.addEventListener('ended', () => {
-        cancelRandomAd();
-        if (repeatMode) {
-            playWithAd(); // repeat with ad
-        } else {
-            nextTrack();
-        }
+        stopAdInterval();
+        if (repeatMode) { playCurrent(); } else { nextTrack(); }
     });
     audio.addEventListener('play', () => {
-        if (!isAdPlaying && currentUser && currentUser.role !== 'admin') scheduleRandomAd();
+        if (!currentUser.premium && !isAdPlaying) startAdInterval();
     });
-    audio.addEventListener('pause', () => {
-        cancelRandomAd();
-    });
+    audio.addEventListener('pause', () => { stopAdInterval(); });
     progressBar.addEventListener('click', (e) => {
         const rect = progressBar.getBoundingClientRect();
         const perc = (e.clientX - rect.left) / rect.width;
         if (audio.duration) audio.currentTime = perc * audio.duration;
     });
-    playPauseBtn.onclick = () => { if (masterPlaylist.length) isPlaying ? pauseCurrent() : playWithAd(); };
+    playPauseBtn.onclick = () => { if (masterPlaylist.length) isPlaying ? pauseCurrent() : playCurrent(); };
     prevBtn.onclick = prevTrack;
     nextBtn.onclick = nextTrack;
     shuffleCtrl.onclick = () => { shuffleMode = !shuffleMode; buildQueue(); shuffleCtrl.style.color = shuffleMode ? '#1DB954' : 'white'; };
@@ -678,11 +777,15 @@
             if (currentView === 'playlist_list') renderPlaylistList();
         }
     };
-
+    premiumTabBtn.onclick = () => {
+        currentView = 'premium';
+        renderPremiumPage();
+    };
+    
     // Authentication
     function initDefaultAdmin() {
-        if (!users.find(u => u.email === 'admin@harmony.com')) {
-            users.push({ email: 'admin@harmony.com', password: 'admin123', role: 'admin' });
+        if (!users.find(u => u.email === 'admin@premiumflow.com')) {
+            users.push({ email: 'admin@premiumflow.com', password: 'admin123', role: 'admin', premium: true, premiumApproved: true });
             saveUsers();
         }
         if (masterPlaylist.length === 0) {
@@ -702,7 +805,7 @@
         if (!email || !pwd) { regErr.innerText = "Email & password wajib"; return; }
         if (pwd !== confirm) { regErr.innerText = "Password tidak cocok"; return; }
         if (users.find(u => u.email === email)) { regErr.innerText = "Email sudah terdaftar"; return; }
-        users.push({ email, password: pwd, role: 'user' });
+        users.push({ email, password: pwd, role: 'user', premium: false, premiumApproved: false });
         saveUsers();
         regErr.innerText = "Pendaftaran berhasil! Silakan login.";
         setTimeout(() => showAuth(true), 1500);
@@ -720,59 +823,23 @@
         userAvatar.innerText = initial;
         userNameDisplay.innerText = email.split('@')[0];
         userRoleBadge.innerText = user.role === 'admin' ? 'Admin' : 'Pengguna';
+        if (user.premium) premiumBadge.style.display = 'inline-flex';
         loadLiked();
         loadUserPlaylists();
         refreshSidebarPlaylists();
-        // Add admin panel if not exists
-        if (!document.querySelector('#adminPanel')) {
-            const adminHtml = `<div id="adminPanel" class="admin-panel"><h3><i class="fas fa-crown"></i> Admin: Edit Iklan Suara & Tambah Lagu</h3>
-                <div class="admin-form"><input type="text" id="adTextInput" value="${adText.replace(/"/g, '&quot;')}" placeholder="Teks iklan suara"><button id="saveAdBtn">Simpan Iklan</button></div>
-                <div style="margin-top:20px;"><h4>Tambah Lagu Baru</h4><div class="admin-form"><input type="text" id="adminUrl" placeholder="Link MP3 (Catbox)"><input type="text" id="adminTitle" placeholder="Judul"><input type="text" id="adminArtist" placeholder="Artis"><button id="adminAddSongBtn">Tambah</button></div></div>
-                <div id="adminMsg" style="color:#1DB954; font-size:12px; margin-top:8px;"></div>
-            </div>`;
-            const mainContent = document.querySelector('.main-content');
-            mainContent.insertAdjacentHTML('afterbegin', adminHtml);
-        }
-        const adminPanelDiv = document.getElementById('adminPanel');
-        if (user.role === 'admin') adminPanelDiv.classList.add('show');
-        else adminPanelDiv.classList.remove('show');
-        document.getElementById('adTextInput').value = adText;
-        document.getElementById('saveAdBtn')?.addEventListener('click', () => {
-            adText = document.getElementById('adTextInput').value.trim();
-            if (!adText) adText = "Tempat Top Up Game terpercaya hanya di FAJRUSHSTORE";
-            saveAdText();
-            document.getElementById('adminMsg').innerText = "Iklan suara diperbarui!";
-            setTimeout(() => document.getElementById('adminMsg').innerText = '', 2000);
-        });
-        document.getElementById('adminAddSongBtn')?.addEventListener('click', () => {
-            let url = document.getElementById('adminUrl').value.trim();
-            let title = document.getElementById('adminTitle').value.trim();
-            let artist = document.getElementById('adminArtist').value.trim();
-            if (!url) { adminMsg.innerText = "Link MP3 wajib"; return; }
-            if (!url.match(/\.mp3$/i)) { adminMsg.innerText = "URL harus .mp3"; return; }
-            if (!title) title = "Lagu Baru";
-            if (!artist) artist = "Unknown";
-            const newId = Date.now();
-            masterPlaylist.push({ id: newId, url, title, artist });
-            saveMasterPlaylist();
-            renderCurrentView();
-            document.getElementById('adminUrl').value = '';
-            document.getElementById('adminTitle').value = '';
-            document.getElementById('adminArtist').value = '';
-            document.getElementById('adminMsg').innerText = "Lagu ditambahkan!";
-            setTimeout(() => document.getElementById('adminMsg').innerText = '', 2000);
-        });
+        if (user.role === 'admin') addAdminPanel();
         currentView = 'home';
         currentSongIndex = 0;
         buildQueue();
         if (masterPlaylist.length) loadSong(0);
         renderHome();
         updateSidebarActive();
+        updatePremiumUI();
     }
     function logout() {
         currentUser = null;
+        stopAdInterval();
         if (isAdPlaying) window.speechSynthesis.cancel();
-        cancelRandomAd();
         audio.pause();
         isPlaying = false;
         mainApp.classList.remove('active');
@@ -797,4 +864,4 @@
     showAuth(true);
 </script>
 </body>
-    </html>
+</html>
