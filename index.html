@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>HarmonyFlow - Music Streaming</title>
+    <title>HarmonyFlow - Music Player</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -23,7 +23,6 @@
             padding: 20px;
         }
 
-        /* Main App Container */
         .app-container {
             width: 100%;
             max-width: 1400px;
@@ -38,7 +37,6 @@
             transition: all 0.3s ease;
         }
 
-        /* Content wrapper (hide/show via auth state) */
         .main-content {
             flex: 1;
             display: none;
@@ -68,7 +66,6 @@
             max-width: 460px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.5);
             border: 1px solid rgba(255,255,255,0.1);
-            transition: 0.2s;
         }
 
         .logo-brand {
@@ -78,7 +75,6 @@
 
         .logo-brand i {
             font-size: 48px;
-            color: #1db954;
             background: linear-gradient(135deg, #1ed760, #1db954);
             -webkit-background-clip: text;
             background-clip: text;
@@ -92,7 +88,6 @@
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            margin-top: 8px;
         }
 
         .input-group {
@@ -107,8 +102,8 @@
             border-radius: 40px;
             font-size: 16px;
             color: white;
-            transition: all 0.2s;
             outline: none;
+            transition: 0.2s;
         }
 
         .input-group input:focus {
@@ -126,8 +121,8 @@
             font-size: 16px;
             color: black;
             cursor: pointer;
-            transition: 0.2s;
             margin-top: 12px;
+            transition: 0.2s;
         }
 
         .auth-btn:hover {
@@ -155,7 +150,7 @@
             text-align: center;
         }
 
-        /* MUSIC PLAYER LAYOUT (setelah login) */
+        /* Player Layout */
         .player-layout {
             display: flex;
             flex: 1;
@@ -164,7 +159,6 @@
             padding: 24px 28px;
         }
 
-        /* Sidebar */
         .sidebar {
             width: 260px;
             background: rgba(0,0,0,0.3);
@@ -208,7 +202,6 @@
             background: rgba(255,255,255,0.05);
         }
 
-        /* Main content music */
         .main-music {
             flex: 1;
             background: rgba(0,0,0,0.25);
@@ -358,10 +351,8 @@
             height: 100%;
             background: #1db954;
             border-radius: 5px;
-            position: relative;
         }
 
-        /* Scroll */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -373,6 +364,7 @@
             background: #1db954;
             border-radius: 10px;
         }
+
         @media (max-width: 780px) {
             .player-layout {
                 flex-direction: column;
@@ -402,7 +394,7 @@
             </div>
             <div id="authFormContainer">
                 <div id="loginForm">
-                    <div class="input-group"><input type="email" id="loginEmail" placeholder="Email address" autocomplete="email"></div>
+                    <div class="input-group"><input type="email" id="loginEmail" placeholder="Email address"></div>
                     <div class="input-group"><input type="password" id="loginPassword" placeholder="Password"></div>
                     <button class="auth-btn" id="loginBtn">Log in</button>
                     <div class="toggle-auth" id="showRegister">Don't have an account? <span>Sign up</span></div>
@@ -420,28 +412,25 @@
         </div>
     </div>
 
-    <!-- MAIN MUSIC APP (after login) -->
+    <!-- MAIN MUSIC APP -->
     <div id="musicApp" class="main-content">
         <div class="player-layout">
-            <!-- Sidebar Navigation -->
             <div class="sidebar">
                 <div class="nav-item active" data-nav="home"><i class="fas fa-home"></i><span>Home</span></div>
                 <div class="nav-item" data-nav="liked"><i class="fas fa-heart"></i><span>Liked Songs</span></div>
                 <div class="playlist-section">
                     <div class="playlist-item" data-playlist="chill"><i class="fas fa-cloud-moon"></i>  Chill Mix</div>
                     <div class="playlist-item" data-playlist="focus"><i class="fas fa-brain"></i>  Focus Flow</div>
-                    <div class="playlist-item" data-playlist="trending"><i class="fas fa-fire"></i>  Trending Indo</div>
+                    <div class="playlist-item" data-playlist="trending"><i class="fas fa-fire"></i>  Trending</div>
                 </div>
                 <div style="margin-top: 40px;"><div class="nav-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>Logout</span></div></div>
             </div>
-            <!-- Main Track List -->
             <div class="main-music" id="mainMusicArea">
-                <div class="greeting" id="greetingText">Welcome back, <span id="userEmailDisplay"></span> 🎧</div>
+                <div class="greeting">Welcome back, <span id="userEmailDisplay"></span> 🎧</div>
                 <div id="trackListContainer" class="track-list"></div>
             </div>
         </div>
-        <!-- Now Playing Bar -->
-        <div class="now-playing-bar" id="nowPlayingBar">
+        <div class="now-playing-bar">
             <div class="track-detail">
                 <div class="mini-cover"><i class="fas fa-music"></i></div>
                 <div><div id="nowPlayingTitle">Select a song</div><div style="font-size:12px; color:#aaa;" id="nowPlayingArtist">HarmonyFlow</div></div>
@@ -461,7 +450,11 @@
 </div>
 
 <script>
-    // ---------- MUSIC DATABASE (DENGAN LAGU BARU: MBG & SESI POTRET) ----------
+    // ========== ⚠️ GANTI URL LAGU DI SINI ==========
+    // Kamu bisa menambah atau mengubah lagu pada array SONGS di bawah.
+    // Setiap lagu butuh: id, title, artist, src (URL MP3), duration (dalam detik), liked (false/true), category (chill/focus/trending)
+    // Contoh: { id: 1, title: "Judul", artist: "Artis", src: "https://contoh.com/lagu.mp3", duration: 210, liked: false, category: "trending" }
+    // ================================================
     const SONGS = [
         { id: 1, title: "Blinding Lights", artist: "The Weeknd", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", duration: 210, liked: false, category: "chill" },
         { id: 2, title: "Levitating", artist: "Dua Lipa", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", duration: 203, liked: false, category: "focus" },
@@ -469,26 +462,24 @@
         { id: 4, title: "Stay", artist: "Kid LAROI", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", duration: 182, liked: false, category: "focus" },
         { id: 5, title: "Bad Habits", artist: "Ed Sheeran", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3", duration: 231, liked: false, category: "chill" },
         { id: 6, title: "Peaches", artist: "Justin Bieber", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3", duration: 198, liked: false, category: "focus" },
-        // LAGU BARU: MAS BAHLIL GANTENG - MBG
-        { id: 7, title: "Mas Bahlil Ganteng", artist: "MBG", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3", duration: 225, liked: false, category: "trending" },
-        // LAGU BARU: ENAU - SESI POTRET
-        { id: 8, title: "Enau", artist: "Sesi Potret", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3", duration: 198, liked: false, category: "trending" }
+        // ===== TAMBAH LAGU KAMU DI SINI =====
+        // Contoh: 
+        // { id: 7, title: "Mas Bahlil Ganteng", artist: "MBG", src: "https://link-mp3-kamu.com/lagu1.mp3", duration: 225, liked: false, category: "trending" },
+        // { id: 8, title: "Enau", artist: "Sesi Potret", src: "https://link-mp3-kamu.com/lagu2.mp3", duration: 198, liked: false, category: "trending" }
     ];
 
-    // Local storage users
+    // ========== JANGAN UBAH KODE DI BAWAH INI ==========
     let users = JSON.parse(localStorage.getItem("harmony_users")) || [];
     let currentUser = null;
-    let currentPlaylist = "all"; // all, liked, chill, focus, trending
+    let currentPlaylist = "all";
     let currentTrackIndex = 0;
     let isPlaying = false;
     let audioPlayer = new Audio();
     let currentQueue = [...SONGS];
 
-    // DOM elements
+    // DOM Elements
     const authPanel = document.getElementById('authPanel');
     const musicApp = document.getElementById('musicApp');
-    const loginFormDiv = document.getElementById('loginForm');
-    const registerFormDiv = document.getElementById('registerForm');
     const loginError = document.getElementById('loginError');
     const regError = document.getElementById('regError');
     const trackContainer = document.getElementById('trackListContainer');
@@ -503,7 +494,6 @@
     const nowPlayingArtist = document.getElementById('nowPlayingArtist');
     const userEmailSpan = document.getElementById('userEmailDisplay');
 
-    // Helper: update user's liked songs
     function syncLikedToStorage() {
         if (!currentUser) return;
         const userData = users.find(u => u.email === currentUser.email);
@@ -524,7 +514,6 @@
         }
     }
 
-    // Get filtered tracks berdasarkan playlist
     function getFilteredTracks() {
         if (currentPlaylist === "liked") return SONGS.filter(s => s.liked === true);
         if (currentPlaylist === "chill") return SONGS.filter(s => s.category === "chill");
@@ -537,9 +526,8 @@
         currentQueue = getFilteredTracks();
         if (resetIndex) currentTrackIndex = 0;
         if (currentQueue.length === 0) {
-            // tidak ada lagu
             nowPlayingTitle.innerText = "No tracks";
-            nowPlayingArtist.innerText = "Add liked songs or explore";
+            nowPlayingArtist.innerText = "Add songs or like some";
             if (audioPlayer.src) audioPlayer.pause();
             isPlaying = false;
             playPauseBtn.innerHTML = '<i class="fas fa-play-circle" style="font-size:36px;"></i>';
@@ -554,10 +542,10 @@
         const tracks = getFilteredTracks();
         trackContainer.innerHTML = '';
         if (tracks.length === 0) {
-            trackContainer.innerHTML = '<div style="text-align:center; padding:40px; color:#aaa;"><i class="fas fa-heart-broken"></i> No songs in this playlist. Like some tracks!</div>';
+            trackContainer.innerHTML = '<div style="text-align:center; padding:40px; color:#aaa;"><i class="fas fa-heart-broken"></i> No songs in this playlist.</div>';
             return;
         }
-        tracks.forEach((track, idx) => {
+        tracks.forEach(track => {
             const trackDiv = document.createElement('div');
             trackDiv.className = 'track-item';
             trackDiv.innerHTML = `
@@ -574,9 +562,9 @@
             `;
             trackDiv.addEventListener('click', (e) => {
                 if(e.target.closest('.play-indicator')) return;
-                const globalIdx = currentQueue.findIndex(t => t.id === track.id);
-                if(globalIdx !== -1) {
-                    currentTrackIndex = globalIdx;
+                const idx = currentQueue.findIndex(t => t.id === track.id);
+                if(idx !== -1) {
+                    currentTrackIndex = idx;
                     loadTrack(track);
                     playMusic();
                 } else {
@@ -594,14 +582,8 @@
                 e.stopPropagation();
                 track.liked = !track.liked;
                 syncLikedToStorage();
-                if(currentPlaylist === 'liked') {
-                    updateQueueAndIndex(true);
-                } else {
-                    renderTrackList();
-                    if (currentPlaylist === 'liked' && !track.liked && currentQueue.length === 0) {
-                        updateQueueAndIndex(true);
-                    }
-                }
+                if(currentPlaylist === 'liked') updateQueueAndIndex(true);
+                else renderTrackList();
             });
             trackContainer.appendChild(trackDiv);
         });
@@ -613,58 +595,34 @@
         nowPlayingTitle.innerText = track.title;
         nowPlayingArtist.innerText = track.artist;
         audioPlayer.load();
-        if (isPlaying) {
-            audioPlayer.play().catch(e => console.log("play error", e));
-        }
+        if (isPlaying) audioPlayer.play().catch(e => console.log("play error"));
         updatePlayPauseIcon();
-        // Set duration metadata listener
         audioPlayer.addEventListener('loadedmetadata', () => {
-            if (!isNaN(audioPlayer.duration)) {
-                durationTimeSpan.innerText = formatTime(audioPlayer.duration);
-            }
+            if (!isNaN(audioPlayer.duration)) durationTimeSpan.innerText = formatTime(audioPlayer.duration);
         });
-        // force update if duration already known
-        if (audioPlayer.readyState >= 1) {
-            durationTimeSpan.innerText = formatTime(audioPlayer.duration);
-        }
+        if (audioPlayer.readyState >= 1) durationTimeSpan.innerText = formatTime(audioPlayer.duration);
     }
 
     function playMusic() {
         if (currentQueue.length === 0) return;
-        audioPlayer.play().then(() => {
-            isPlaying = true;
-            updatePlayPauseIcon();
-        }).catch(err => console.log("autoplay blocked?"));
+        audioPlayer.play().then(() => { isPlaying = true; updatePlayPauseIcon(); }).catch(e => console.log);
     }
-
-    function pauseMusic() {
-        audioPlayer.pause();
-        isPlaying = false;
-        updatePlayPauseIcon();
-    }
-
+    function pauseMusic() { audioPlayer.pause(); isPlaying = false; updatePlayPauseIcon(); }
     function updatePlayPauseIcon() {
-        if (isPlaying) {
-            playPauseBtn.innerHTML = '<i class="fas fa-pause-circle" style="font-size:36px;"></i>';
-        } else {
-            playPauseBtn.innerHTML = '<i class="fas fa-play-circle" style="font-size:36px;"></i>';
-        }
+        playPauseBtn.innerHTML = isPlaying ? '<i class="fas fa-pause-circle" style="font-size:36px;"></i>' : '<i class="fas fa-play-circle" style="font-size:36px;"></i>';
     }
-
     function nextTrack() {
         if (currentQueue.length === 0) return;
         currentTrackIndex = (currentTrackIndex + 1) % currentQueue.length;
         loadTrack(currentQueue[currentTrackIndex]);
         if (isPlaying) audioPlayer.play();
     }
-
     function prevTrack() {
         if (currentQueue.length === 0) return;
         currentTrackIndex = (currentTrackIndex - 1 + currentQueue.length) % currentQueue.length;
         loadTrack(currentQueue[currentTrackIndex]);
         if (isPlaying) audioPlayer.play();
     }
-
     function formatTime(seconds) {
         if (isNaN(seconds) || !isFinite(seconds)) return "0:00";
         const mins = Math.floor(seconds / 60);
@@ -674,96 +632,66 @@
 
     audioPlayer.addEventListener('timeupdate', () => {
         if (audioPlayer.duration && isFinite(audioPlayer.duration)) {
-            const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
-            progressFill.style.width = percent + '%';
+            progressFill.style.width = (audioPlayer.currentTime / audioPlayer.duration) * 100 + '%';
             currentTimeSpan.innerText = formatTime(audioPlayer.currentTime);
         }
     });
-    audioPlayer.addEventListener('ended', () => {
-        nextTrack();
-    });
+    audioPlayer.addEventListener('ended', nextTrack);
     progressBarContainer.addEventListener('click', (e) => {
         const rect = progressBarContainer.getBoundingClientRect();
         const percent = (e.clientX - rect.left) / rect.width;
-        if (audioPlayer.duration && isFinite(audioPlayer.duration)) {
-            audioPlayer.currentTime = percent * audioPlayer.duration;
-        }
+        if (audioPlayer.duration && isFinite(audioPlayer.duration)) audioPlayer.currentTime = percent * audioPlayer.duration;
     });
-    playPauseBtn.addEventListener('click', () => {
-        if (currentQueue.length === 0) return;
-        if (isPlaying) pauseMusic();
-        else playMusic();
-    });
+    playPauseBtn.addEventListener('click', () => { if (currentQueue.length) isPlaying ? pauseMusic() : playMusic(); });
     nextBtn.addEventListener('click', nextTrack);
     prevBtn.addEventListener('click', prevTrack);
+    function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
 
-    function escapeHtml(str) { 
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m){
-            if(m==='&') return '&amp;'; 
-            if(m==='<') return '&lt;'; 
-            if(m==='>') return '&gt;'; 
-            return m;
-        }); 
-    }
-
-    // Navigation & playlist switching
-    function setActiveNav(selector) {
-        document.querySelectorAll('.nav-item[data-nav]').forEach(n => n.classList.remove('active'));
-        if(selector) selector.classList.add('active');
-    }
+    // Navigation
     document.querySelectorAll('.nav-item[data-nav]').forEach(nav => {
-        nav.addEventListener('click', (e) => {
+        nav.addEventListener('click', () => {
             const navType = nav.getAttribute('data-nav');
             if (navType === 'home') currentPlaylist = 'all';
             else if (navType === 'liked') currentPlaylist = 'liked';
-            setActiveNav(nav);
+            document.querySelectorAll('.nav-item[data-nav]').forEach(n => n.classList.remove('active'));
+            nav.classList.add('active');
             updateQueueAndIndex(true);
         });
     });
     document.querySelectorAll('.playlist-item').forEach(play => {
         play.addEventListener('click', () => {
             const pl = play.getAttribute('data-playlist');
-            if(pl === 'chill') currentPlaylist = 'chill';
-            if(pl === 'focus') currentPlaylist = 'focus';
-            if(pl === 'trending') currentPlaylist = 'trending';
+            if (pl === 'chill') currentPlaylist = 'chill';
+            else if (pl === 'focus') currentPlaylist = 'focus';
+            else if (pl === 'trending') currentPlaylist = 'trending';
             document.querySelectorAll('.nav-item[data-nav]').forEach(n => n.classList.remove('active'));
             updateQueueAndIndex(true);
         });
     });
 
-    // Authentication Logic
+    // Auth logic
     function showAuth(showLogin) {
-        if (showLogin) {
-            loginFormDiv.style.display = 'block';
-            registerFormDiv.style.display = 'none';
-        } else {
-            loginFormDiv.style.display = 'none';
-            registerFormDiv.style.display = 'block';
-        }
+        document.getElementById('loginForm').style.display = showLogin ? 'block' : 'none';
+        document.getElementById('registerForm').style.display = showLogin ? 'none' : 'block';
         loginError.innerText = '';
         regError.innerText = '';
     }
-
     function register(email, pwd, confirm) {
         if (!email || !pwd) { regError.innerText = "Email & password required"; return false; }
         if (pwd !== confirm) { regError.innerText = "Passwords don't match"; return false; }
         if (users.find(u => u.email === email)) { regError.innerText = "Email already exists"; return false; }
-        users.push({ email: email, password: pwd, likedSongs: [] });
+        users.push({ email, password: pwd, likedSongs: [] });
         localStorage.setItem("harmony_users", JSON.stringify(users));
         regError.innerText = "Account created! Please login.";
         setTimeout(() => showAuth(true), 1200);
         return true;
     }
-
     function login(email, pwd) {
         const user = users.find(u => u.email === email && u.password === pwd);
         if (!user) { loginError.innerText = "Invalid credentials"; return false; }
         currentUser = { email: user.email };
-        // reset semua liked flag
         SONGS.forEach(s => s.liked = false);
         if (user.likedSongs) user.likedSongs.forEach(id => { const s = SONGS.find(song => song.id === id); if(s) s.liked = true; });
-        // default playlist home
         currentPlaylist = 'all';
         updateQueueAndIndex(true);
         userEmailSpan.innerText = email.split('@')[0];
@@ -771,7 +699,6 @@
         musicApp.classList.add('active');
         return true;
     }
-
     function logout() {
         currentUser = null;
         audioPlayer.pause();
@@ -782,29 +709,18 @@
         document.getElementById('loginPassword').value = '';
         showAuth(true);
     }
+    document.getElementById('loginBtn').onclick = () => login(document.getElementById('loginEmail').value.trim(), document.getElementById('loginPassword').value);
+    document.getElementById('registerBtn').onclick = () => register(document.getElementById('regEmail').value.trim(), document.getElementById('regPassword').value, document.getElementById('regConfirm').value);
+    document.getElementById('showRegister').onclick = () => showAuth(false);
+    document.getElementById('showLogin').onclick = () => showAuth(true);
+    document.getElementById('logoutBtn').onclick = logout;
 
-    document.getElementById('loginBtn').addEventListener('click', () => {
-        const email = document.getElementById('loginEmail').value.trim();
-        const pass = document.getElementById('loginPassword').value;
-        login(email, pass);
-    });
-    document.getElementById('registerBtn').addEventListener('click', () => {
-        const email = document.getElementById('regEmail').value.trim();
-        const pass = document.getElementById('regPassword').value;
-        const confirm = document.getElementById('regConfirm').value;
-        register(email, pass, confirm);
-    });
-    document.getElementById('showRegister').addEventListener('click', () => showAuth(false));
-    document.getElementById('showLogin').addEventListener('click', () => showAuth(true));
-    document.getElementById('logoutBtn').addEventListener('click', logout);
-
-    // initial state
-    showAuth(true);
-    // jika belum ada user, buat demo user dengan beberapa liked (termasuk lagu baru demo)
+    // Init demo user jika belum ada
     if (users.length === 0) {
-        users.push({ email: "demo@harmony.com", password: "123456", likedSongs: [1,4,7] });
+        users.push({ email: "demo@harmony.com", password: "123456", likedSongs: [1,4] });
         localStorage.setItem("harmony_users", JSON.stringify(users));
     }
+    showAuth(true);
 </script>
 </body>
 </html>
