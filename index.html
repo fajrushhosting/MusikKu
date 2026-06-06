@@ -3,204 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>HarmonyFlow · Musik + Playlist Pribadi</title>
+    <title>HarmonyFlow · Music + Smart Ads</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-        body {
-            background: #000;
-            height: 100vh;
-            overflow: hidden;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #000; height: 100vh; overflow: hidden; }
         /* Auth Modal */
         .auth-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(20px);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); backdrop-filter: blur(20px); z-index: 1000;
+            display: flex; align-items: center; justify-content: center;
         }
         .auth-card {
-            background: #121212;
-            border-radius: 32px;
-            padding: 40px;
-            width: 90%;
-            max-width: 460px;
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.1);
+            background: #121212; border-radius: 32px; padding: 40px; width: 90%; max-width: 460px;
+            text-align: center; border: 1px solid rgba(255,255,255,0.1);
         }
         .auth-logo { font-size: 48px; color: #1DB954; margin-bottom: 16px; }
         .auth-card h2 { font-size: 28px; margin-bottom: 24px; color: white; }
         .input-group { margin-bottom: 16px; }
         .input-group input {
-            width: 100%;
-            padding: 14px 18px;
-            background: #1f1f1f;
-            border: 1px solid #2a2a2a;
-            border-radius: 40px;
-            font-size: 16px;
-            color: white;
-            outline: none;
+            width: 100%; padding: 14px 18px; background: #1f1f1f; border: 1px solid #2a2a2a;
+            border-radius: 40px; font-size: 16px; color: white; outline: none;
         }
         .input-group input:focus { border-color: #1DB954; }
         .auth-btn {
-            background: #1DB954;
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 40px;
-            font-weight: 700;
-            font-size: 16px;
-            color: black;
-            cursor: pointer;
-            margin-top: 8px;
+            background: #1DB954; width: 100%; padding: 14px; border: none; border-radius: 40px;
+            font-weight: 700; font-size: 16px; color: black; cursor: pointer; margin-top: 8px;
         }
         .toggle-auth { margin-top: 20px; color: #b3b3b3; cursor: pointer; font-size: 14px; }
         .toggle-auth span { color: #1DB954; font-weight: 600; }
         .error-msg { color: #f15e5e; font-size: 13px; margin-top: 10px; }
-
         /* Main App */
-        .main-app {
-            display: none;
-            height: 100vh;
-            flex-direction: column;
-            background: #000;
-        }
+        .main-app { display: none; height: 100vh; flex-direction: column; background: #000; }
         .main-app.active { display: flex; }
-        /* Top bar */
         .top-bar {
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(12px);
-            padding: 12px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(12px); padding: 12px 24px;
+            display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         .logo { display: flex; align-items: center; gap: 10px; }
         .logo i { font-size: 32px; color: #1DB954; }
         .logo span { font-size: 22px; font-weight: 800; color: white; }
         .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            background: #1f1f1f;
-            padding: 6px 16px 6px 12px;
-            border-radius: 40px;
+            display: flex; align-items: center; gap: 16px; background: #1f1f1f;
+            padding: 6px 16px 6px 12px; border-radius: 40px;
         }
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            background: #1DB954;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: black;
-            text-transform: uppercase;
-        }
+        .user-avatar { width: 32px; height: 32px; background: #1DB954; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: black; text-transform: uppercase; }
         .user-name { color: white; font-weight: 500; }
         .user-role { background: #2a2a2a; padding: 4px 12px; border-radius: 40px; font-size: 12px; color: #1DB954; }
         .logout-btn { background: none; border: none; color: #b3b3b3; cursor: pointer; font-size: 18px; }
-
-        /* Layout */
-        .spotify-layout {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-            padding: 16px 24px;
-            gap: 20px;
-        }
-        .sidebar {
-            width: 260px;
-            background: #0a0a0a;
-            border-radius: 24px;
-            padding: 20px 12px;
-        }
+        .spotify-layout { display: flex; flex: 1; overflow: hidden; padding: 16px 24px; gap: 20px; }
+        .sidebar { width: 260px; background: #0a0a0a; border-radius: 24px; padding: 20px 12px; }
         .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 12px 16px;
-            border-radius: 12px;
-            color: #b3b3b3;
-            transition: 0.2s;
-            cursor: pointer;
-            margin-bottom: 8px;
+            display: flex; align-items: center; gap: 16px; padding: 12px 16px; border-radius: 12px;
+            color: #b3b3b3; transition: 0.2s; cursor: pointer; margin-bottom: 8px;
         }
         .nav-item.active, .nav-item:hover { background: #1f1f1f; color: white; }
-        .playlist-header {
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #aaa;
-            padding: 8px 16px;
-            margin-top: 20px;
-        }
-        .create-playlist-btn {
-            background: rgba(29,185,84,0.2);
-            margin-top: 12px;
-            color: #1DB954;
-        }
-        .main-content {
-            flex: 1;
-            background: #121212;
-            border-radius: 24px;
-            overflow-y: auto;
-            padding: 24px;
-        }
+        .playlist-header { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #aaa; padding: 8px 16px; margin-top: 20px; }
+        .create-playlist-btn { background: rgba(29,185,84,0.2); margin-top: 12px; color: #1DB954; }
+        .main-content { flex: 1; background: #121212; border-radius: 24px; overflow-y: auto; padding: 24px; }
         .greeting { font-size: 28px; font-weight: 700; margin-bottom: 28px; color: white; }
-        /* Admin Panel */
         .admin-panel {
-            background: #1e1e1e;
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 30px;
-            display: none;
-            border: 1px solid #2c2c2c;
+            background: #1e1e1e; border-radius: 20px; padding: 20px; margin-bottom: 30px;
+            display: none; border: 1px solid #2c2c2c;
         }
         .admin-panel.show { display: block; }
         .admin-panel h3 { color: white; margin-bottom: 16px; }
         .admin-form { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-        .admin-form input {
-            flex: 1;
-            background: #0f0f0f;
-            border: 1px solid #2a2a2a;
-            border-radius: 40px;
-            padding: 12px 16px;
-            color: white;
-        }
-        .admin-form button {
-            background: #1DB954;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 40px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        /* Track list */
+        .admin-form input { flex: 1; background: #0f0f0f; border: 1px solid #2a2a2a; border-radius: 40px; padding: 12px 16px; color: white; }
+        .admin-form button { background: #1DB954; border: none; padding: 12px 24px; border-radius: 40px; font-weight: 700; cursor: pointer; }
         .track-grid { display: flex; flex-direction: column; gap: 8px; }
         .track-row {
-            background: #181818;
-            border-radius: 12px;
-            padding: 12px 18px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
+            background: #181818; border-radius: 12px; padding: 12px 18px;
+            display: flex; align-items: center; justify-content: space-between; cursor: pointer;
         }
         .track-row:hover { background: #282828; }
         .track-row.active { background: #2a2a2a; border-left: 4px solid #1DB954; }
@@ -210,16 +85,9 @@
         .track-artist { font-size: 13px; color: #b3b3b3; }
         .track-actions { display: flex; gap: 12px; }
         .track-actions button { background: none; border: none; color: #b3b3b3; cursor: pointer; font-size: 16px; }
-        /* Now Playing Bar */
         .now-playing-bar {
-            background: #181818;
-            border-top: 1px solid #282828;
-            padding: 12px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-            flex-wrap: wrap;
+            background: #181818; border-top: 1px solid #282828; padding: 12px 24px;
+            display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
         }
         .now-playing-info { display: flex; align-items: center; gap: 16px; min-width: 180px; }
         .mini-vinyl { width: 56px; height: 56px; background: radial-gradient(circle, #2a2a2a, #111); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #1DB954; font-size: 28px; }
@@ -316,15 +184,16 @@
     let isPlaying = false;
     let shuffleMode = false;
     let repeatMode = false;
-    let likedSongs = [];     // id lagu yang disukai user saat ini
-    let userPlaylists = [];   // array { id, name, songs: [] } untuk user saat ini
+    let likedSongs = [];
+    let userPlaylists = [];
     let audio = new Audio();
     let currentQueue = [];
-    let currentView = 'home';     // 'home', 'liked', 'playlist_detail', 'playlist_list'
-    let currentPlaylistId = null;  // jika view detail playlist
+    let currentView = 'home';
+    let currentPlaylistId = null;
     let adText = localStorage.getItem('harmony_ad_text') || "Tempat Top Up Game terpercaya hanya di FAJRUSHSTORE";
     let isAdPlaying = false;
-    let pendingPlayCallback = null;
+    let adTimeoutId = null;
+    let savedPlaybackPosition = 0; // untuk resume setelah iklan
 
     // DOM elements
     const authOverlay = document.getElementById('authOverlay');
@@ -350,7 +219,7 @@
     const logoutBtnMain = document.getElementById('logoutBtnMain');
     const createPlaylistBtn = document.getElementById('createPlaylistBtn');
 
-    // Helper functions
+    // Helper: save data
     function saveUsers() { localStorage.setItem('harmony_users', JSON.stringify(users)); }
     function saveMasterPlaylist() { localStorage.setItem('harmony_master_playlist', JSON.stringify(masterPlaylist)); }
     function saveLiked() { localStorage.setItem(`harmony_liked_${currentUser.email}`, JSON.stringify(likedSongs)); }
@@ -359,6 +228,7 @@
     function loadUserPlaylists() { userPlaylists = JSON.parse(localStorage.getItem(`harmony_playlists_${currentUser.email}`)) || []; }
     function saveAdText() { localStorage.setItem('harmony_ad_text', adText); }
 
+    // Build queue for shuffle
     function buildQueue() {
         if (shuffleMode) {
             let indices = Array.from(Array(masterPlaylist.length).keys());
@@ -375,6 +245,164 @@
         }
     }
 
+    // Schedule random ad while playing
+    function scheduleRandomAd() {
+        if (adTimeoutId) clearTimeout(adTimeoutId);
+        if (!currentUser || currentUser.role === 'admin') return; // admin no ads
+        if (!isPlaying || !audio.src || audio.paused || isAdPlaying) return;
+        // random interval between 30 and 120 seconds (30000 - 120000 ms)
+        const delay = Math.floor(Math.random() * (120000 - 30000 + 1) + 30000);
+        adTimeoutId = setTimeout(() => {
+            if (isPlaying && !isAdPlaying && currentUser && currentUser.role !== 'admin') {
+                playRandomAd();
+            }
+        }, delay);
+    }
+
+    function cancelRandomAd() {
+        if (adTimeoutId) {
+            clearTimeout(adTimeoutId);
+            adTimeoutId = null;
+        }
+    }
+
+    // Play ad (pause music, speak, then resume)
+    function playRandomAd() {
+        if (isAdPlaying) return;
+        if (!currentUser || currentUser.role === 'admin') return;
+        // Pause music and save position
+        if (isPlaying) {
+            savedPlaybackPosition = audio.currentTime;
+            audio.pause();
+            isPlaying = false;
+            updatePlayIcon();
+            miniVinyl.classList.remove('vinyl-spin');
+        } else {
+            savedPlaybackPosition = audio.currentTime;
+        }
+        isAdPlaying = true;
+        const utterance = new SpeechSynthesisUtterance(adText);
+        utterance.lang = 'id-ID';
+        utterance.onend = () => {
+            isAdPlaying = false;
+            // Resume music from saved position if there is a song loaded
+            if (audio.src && masterPlaylist.length && currentSongIndex >= 0) {
+                audio.currentTime = savedPlaybackPosition;
+                audio.play().then(() => {
+                    isPlaying = true;
+                    miniVinyl.classList.add('vinyl-spin');
+                    updatePlayIcon();
+                    scheduleRandomAd(); // reschedule after ad finishes
+                }).catch(e => console.log("resume error"));
+            } else {
+                // if no song, just reset
+                isPlaying = false;
+                updatePlayIcon();
+            }
+        };
+        utterance.onerror = () => {
+            isAdPlaying = false;
+            if (audio.src) {
+                audio.currentTime = savedPlaybackPosition;
+                audio.play().catch(e=>console.log);
+                isPlaying = true;
+                miniVinyl.classList.add('vinyl-spin');
+                updatePlayIcon();
+                scheduleRandomAd();
+            }
+        };
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // Main play function with ad on click
+    function playWithAd() {
+        if (!masterPlaylist.length) return;
+        if (currentSongIndex === -1) currentSongIndex = 0;
+        // If already playing and no ad, do nothing
+        if (isPlaying && !isAdPlaying) return;
+        // If ad is playing, don't interrupt
+        if (isAdPlaying) return;
+        // For non-admin, play ad first
+        if (currentUser && currentUser.role !== 'admin') {
+            if (isPlaying) {
+                // already playing, no need ad
+                return;
+            }
+            // Save position if any
+            savedPlaybackPosition = audio.currentTime;
+            isAdPlaying = true;
+            const utterance = new SpeechSynthesisUtterance(adText);
+            utterance.lang = 'id-ID';
+            utterance.onend = () => {
+                isAdPlaying = false;
+                // Resume or start from saved position
+                if (audio.src && masterPlaylist.length) {
+                    audio.currentTime = savedPlaybackPosition;
+                    audio.play().then(() => {
+                        isPlaying = true;
+                        miniVinyl.classList.add('vinyl-spin');
+                        updatePlayIcon();
+                        scheduleRandomAd();
+                    }).catch(e => console.log);
+                } else {
+                    // load current song
+                    if (masterPlaylist[currentSongIndex]) {
+                        loadSong(currentSongIndex);
+                        audio.play().then(() => {
+                            isPlaying = true;
+                            miniVinyl.classList.add('vinyl-spin');
+                            updatePlayIcon();
+                            scheduleRandomAd();
+                        }).catch(e => console.log);
+                    }
+                }
+            };
+            utterance.onerror = () => {
+                isAdPlaying = false;
+                // fallback: langsung play
+                if (audio.src) {
+                    audio.play().then(() => { isPlaying=true; updatePlayIcon(); scheduleRandomAd(); });
+                } else if (masterPlaylist[currentSongIndex]) {
+                    loadSong(currentSongIndex);
+                    audio.play().then(() => { isPlaying=true; updatePlayIcon(); scheduleRandomAd(); });
+                }
+            };
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utterance);
+        } else {
+            // admin langsung play
+            if (audio.src) {
+                audio.play().then(() => {
+                    isPlaying = true;
+                    miniVinyl.classList.add('vinyl-spin');
+                    updatePlayIcon();
+                    scheduleRandomAd();
+                }).catch(e => console.log);
+            } else if (masterPlaylist[currentSongIndex]) {
+                loadSong(currentSongIndex);
+                audio.play().then(() => {
+                    isPlaying = true;
+                    miniVinyl.classList.add('vinyl-spin');
+                    updatePlayIcon();
+                    scheduleRandomAd();
+                });
+            }
+        }
+    }
+
+    function pauseCurrent() {
+        if (isAdPlaying) {
+            window.speechSynthesis.cancel();
+            isAdPlaying = false;
+        }
+        cancelRandomAd();
+        audio.pause();
+        isPlaying = false;
+        miniVinyl.classList.remove('vinyl-spin');
+        updatePlayIcon();
+    }
+
     function loadSong(index) {
         if (!masterPlaylist.length || index < 0 || index >= masterPlaylist.length) return false;
         const song = masterPlaylist[index];
@@ -383,8 +411,9 @@
         nowPlayingTitle.innerText = song.title;
         nowPlayingArtist.innerText = song.artist;
         if (isPlaying && !isAdPlaying) {
-            audio.play().catch(e => console.log);
+            audio.play().catch(e=>console.log);
             miniVinyl.classList.add('vinyl-spin');
+            scheduleRandomAd();
         } else {
             miniVinyl.classList.remove('vinyl-spin');
         }
@@ -393,95 +422,16 @@
         return true;
     }
 
-    function playWithAd(callback) {
-        if (currentUser && currentUser.role !== 'admin' && adText.trim() !== "") {
-            if (isAdPlaying) return;
-            isAdPlaying = true;
-            // Hentikan audio sementara
-            const wasPlaying = isPlaying;
-            if (wasPlaying) {
-                audio.pause();
-                isPlaying = false;
-                updatePlayIcon();
-            }
-            const utterance = new SpeechSynthesisUtterance(adText);
-            utterance.lang = 'id-ID';
-            utterance.onend = () => {
-                isAdPlaying = false;
-                if (callback) callback();
-                else if (wasPlaying || true) {
-                    // lanjutkan play lagu
-                    if (audio.src) {
-                        audio.play().then(() => {
-                            isPlaying = true;
-                            miniVinyl.classList.add('vinyl-spin');
-                            updatePlayIcon();
-                        }).catch(e => console.log);
-                    }
-                }
-            };
-            utterance.onerror = () => {
-                isAdPlaying = false;
-                if (callback) callback();
-            };
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(utterance);
-        } else {
-            if (callback) callback();
-            else {
-                if (audio.src) {
-                    audio.play().then(() => {
-                        isPlaying = true;
-                        miniVinyl.classList.add('vinyl-spin');
-                        updatePlayIcon();
-                    }).catch(e => console.log);
-                }
-            }
-        }
-    }
-
-    function playCurrent() {
-        if (!masterPlaylist.length) return;
-        if (currentSongIndex === -1) currentSongIndex = 0;
-        if (isPlaying && !isAdPlaying) {
-            // sudah diputar, tidak perlu iklan lagi
-            return;
-        }
-        playWithAd(() => {
-            if (audio.src) {
-                audio.play().then(() => {
-                    isPlaying = true;
-                    miniVinyl.classList.add('vinyl-spin');
-                    updatePlayIcon();
-                }).catch(e => console.log);
-            }
-        });
-    }
-
-    function pauseCurrent() {
-        if (isAdPlaying) {
-            window.speechSynthesis.cancel();
-            isAdPlaying = false;
-        }
-        audio.pause();
-        isPlaying = false;
-        miniVinyl.classList.remove('vinyl-spin');
-        updatePlayIcon();
-    }
-
     function nextTrack() {
         if (!masterPlaylist.length) return;
-        pauseCurrent();
+        pauseCurrent(); // stop current and cancel ad schedule
         buildQueue();
         let curIdxInQueue = currentQueue.findIndex(s => s.id === masterPlaylist[currentSongIndex]?.id);
         if (curIdxInQueue === -1) curIdxInQueue = 0;
         let nextPos = (curIdxInQueue + 1) % currentQueue.length;
         if (repeatMode) {
             // repeat one
-            playWithAd(() => {
-                loadSong(currentSongIndex);
-                audio.play().then(() => { isPlaying=true; miniVinyl.classList.add('vinyl-spin'); updatePlayIcon(); });
-            });
+            playWithAd(); // will play same song with ad
             return;
         }
         const nextSong = currentQueue[nextPos];
@@ -490,7 +440,7 @@
             if (newIdx !== -1) {
                 currentSongIndex = newIdx;
                 loadSong(currentSongIndex);
-                playCurrent();
+                playWithAd();
             }
         } else {
             pauseCurrent();
@@ -510,7 +460,7 @@
             if (newIdx !== -1) {
                 currentSongIndex = newIdx;
                 loadSong(currentSongIndex);
-                playCurrent();
+                playWithAd();
             }
         }
     }
@@ -521,7 +471,7 @@
 
     function formatTime(sec) { if (isNaN(sec)) return "0:00"; let m = Math.floor(sec/60); let s = Math.floor(sec%60); return `${m}:${s<10?'0':''}${s}`; }
 
-    // Render berdasarkan view
+    // Render views
     function renderCurrentView() {
         if (currentView === 'home') renderHome();
         else if (currentView === 'liked') renderLiked();
@@ -563,7 +513,7 @@
                 if (globalIdx !== -1) {
                     currentSongIndex = globalIdx;
                     loadSong(currentSongIndex);
-                    playCurrent();
+                    playWithAd();
                 }
             });
             row.querySelector('.like-song')?.addEventListener('click', (e) => {
@@ -637,7 +587,6 @@
         const container = document.getElementById('playlistDetailList');
         renderTrackList(container, playlistSongs);
         document.getElementById('addToPlaylistBtn')?.addEventListener('click', () => {
-            // Tampilkan modal sederhana pilih lagu dari master
             const songOptions = masterPlaylist.filter(s => !playlist.songs.includes(s.id));
             if (songOptions.length === 0) { alert("Semua lagu sudah ada di playlist ini."); return; }
             let optionsHtml = "<div style='background:#121212; padding:20px; border-radius:24px;'><h4>Tambah Lagu</h4><ul style='list-style:none;'>";
@@ -663,7 +612,7 @@
     }
 
     function updateSidebarActive() {
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.querySelectorAll('.nav-item[data-view]').forEach(n => n.classList.remove('active'));
         if (currentView === 'home') document.querySelector('[data-view="home"]').classList.add('active');
         else if (currentView === 'liked') document.querySelector('[data-view="liked"]').classList.add('active');
     }
@@ -686,7 +635,7 @@
 
     function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
 
-    // Audio events
+    // Audio event handlers
     audio.addEventListener('timeupdate', () => {
         if (audio.duration && !isNaN(audio.duration)) {
             progressFill.style.width = (audio.currentTime / audio.duration) * 100 + '%';
@@ -695,15 +644,25 @@
         }
     });
     audio.addEventListener('ended', () => {
-        if (repeatMode) { playWithAd(() => { loadSong(currentSongIndex); audio.play(); isPlaying=true; updatePlayIcon(); }); }
-        else nextTrack();
+        cancelRandomAd();
+        if (repeatMode) {
+            playWithAd(); // repeat with ad
+        } else {
+            nextTrack();
+        }
+    });
+    audio.addEventListener('play', () => {
+        if (!isAdPlaying && currentUser && currentUser.role !== 'admin') scheduleRandomAd();
+    });
+    audio.addEventListener('pause', () => {
+        cancelRandomAd();
     });
     progressBar.addEventListener('click', (e) => {
         const rect = progressBar.getBoundingClientRect();
         const perc = (e.clientX - rect.left) / rect.width;
         if (audio.duration) audio.currentTime = perc * audio.duration;
     });
-    playPauseBtn.onclick = () => { if (masterPlaylist.length) isPlaying ? pauseCurrent() : playCurrent(); };
+    playPauseBtn.onclick = () => { if (masterPlaylist.length) isPlaying ? pauseCurrent() : playWithAd(); };
     prevBtn.onclick = prevTrack;
     nextBtn.onclick = nextTrack;
     shuffleCtrl.onclick = () => { shuffleMode = !shuffleMode; buildQueue(); shuffleCtrl.style.color = shuffleMode ? '#1DB954' : 'white'; };
@@ -720,7 +679,7 @@
         }
     };
 
-    // Auth
+    // Authentication
     function initDefaultAdmin() {
         if (!users.find(u => u.email === 'admin@harmony.com')) {
             users.push({ email: 'admin@harmony.com', password: 'admin123', role: 'admin' });
@@ -764,25 +723,45 @@
         loadLiked();
         loadUserPlaylists();
         refreshSidebarPlaylists();
-        // Tampilkan panel admin jika admin
-        const adminPanelDiv = document.getElementById('adminPanel');
-        if (!document.querySelector('.admin-panel')) {
-            const adminHtml = `<div id="adminPanel" class="admin-panel ${user.role === 'admin' ? 'show' : ''}"><h3><i class="fas fa-crown"></i> Admin: Edit Iklan Suara</h3><div class="admin-form"><input type="text" id="adTextInput" value="${adText.replace(/"/g, '&quot;')}" placeholder="Teks iklan suara"><button id="saveAdBtn">Simpan Iklan</button></div><div id="adminMsg" style="color:#1DB954; font-size:12px; margin-top:8px;"></div></div>`;
+        // Add admin panel if not exists
+        if (!document.querySelector('#adminPanel')) {
+            const adminHtml = `<div id="adminPanel" class="admin-panel"><h3><i class="fas fa-crown"></i> Admin: Edit Iklan Suara & Tambah Lagu</h3>
+                <div class="admin-form"><input type="text" id="adTextInput" value="${adText.replace(/"/g, '&quot;')}" placeholder="Teks iklan suara"><button id="saveAdBtn">Simpan Iklan</button></div>
+                <div style="margin-top:20px;"><h4>Tambah Lagu Baru</h4><div class="admin-form"><input type="text" id="adminUrl" placeholder="Link MP3 (Catbox)"><input type="text" id="adminTitle" placeholder="Judul"><input type="text" id="adminArtist" placeholder="Artis"><button id="adminAddSongBtn">Tambah</button></div></div>
+                <div id="adminMsg" style="color:#1DB954; font-size:12px; margin-top:8px;"></div>
+            </div>`;
             const mainContent = document.querySelector('.main-content');
             mainContent.insertAdjacentHTML('afterbegin', adminHtml);
-            if (user.role === 'admin') document.getElementById('adminPanel').classList.add('show');
-            document.getElementById('saveAdBtn')?.addEventListener('click', () => {
-                adText = document.getElementById('adTextInput').value.trim();
-                if (!adText) adText = "Tempat Top Up Game terpercaya hanya di FAJRUSHSTORE";
-                saveAdText();
-                document.getElementById('adminMsg').innerText = "Iklan suara diperbarui!";
-                setTimeout(() => document.getElementById('adminMsg').innerText = '', 2000);
-            });
-        } else {
-            if (user.role === 'admin') document.getElementById('adminPanel').classList.add('show');
-            else document.getElementById('adminPanel').classList.remove('show');
-            document.getElementById('adTextInput').value = adText;
         }
+        const adminPanelDiv = document.getElementById('adminPanel');
+        if (user.role === 'admin') adminPanelDiv.classList.add('show');
+        else adminPanelDiv.classList.remove('show');
+        document.getElementById('adTextInput').value = adText;
+        document.getElementById('saveAdBtn')?.addEventListener('click', () => {
+            adText = document.getElementById('adTextInput').value.trim();
+            if (!adText) adText = "Tempat Top Up Game terpercaya hanya di FAJRUSHSTORE";
+            saveAdText();
+            document.getElementById('adminMsg').innerText = "Iklan suara diperbarui!";
+            setTimeout(() => document.getElementById('adminMsg').innerText = '', 2000);
+        });
+        document.getElementById('adminAddSongBtn')?.addEventListener('click', () => {
+            let url = document.getElementById('adminUrl').value.trim();
+            let title = document.getElementById('adminTitle').value.trim();
+            let artist = document.getElementById('adminArtist').value.trim();
+            if (!url) { adminMsg.innerText = "Link MP3 wajib"; return; }
+            if (!url.match(/\.mp3$/i)) { adminMsg.innerText = "URL harus .mp3"; return; }
+            if (!title) title = "Lagu Baru";
+            if (!artist) artist = "Unknown";
+            const newId = Date.now();
+            masterPlaylist.push({ id: newId, url, title, artist });
+            saveMasterPlaylist();
+            renderCurrentView();
+            document.getElementById('adminUrl').value = '';
+            document.getElementById('adminTitle').value = '';
+            document.getElementById('adminArtist').value = '';
+            document.getElementById('adminMsg').innerText = "Lagu ditambahkan!";
+            setTimeout(() => document.getElementById('adminMsg').innerText = '', 2000);
+        });
         currentView = 'home';
         currentSongIndex = 0;
         buildQueue();
@@ -792,9 +771,10 @@
     }
     function logout() {
         currentUser = null;
+        if (isAdPlaying) window.speechSynthesis.cancel();
+        cancelRandomAd();
         audio.pause();
         isPlaying = false;
-        if (window.speechSynthesis) window.speechSynthesis.cancel();
         mainApp.classList.remove('active');
         authOverlay.style.display = 'flex';
         loginEmail.value = ''; loginPassword.value = '';
