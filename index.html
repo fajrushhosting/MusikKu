@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>HarmonyFlow - Music Streaming</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a0f 0%, #12121c 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Main App Container */
+        .app-container {
+            width: 100%;
+            max-width: 1400px;
+            height: 90vh;
+            background: rgba(18, 18, 28, 0.7);
+            backdrop-filter: blur(15px);
+            border-radius: 32px;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        /* Content wrapper (hide/show via auth state) */
+        .main-content {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .main-content.active {
+            display: flex;
+        }
+
+        /* Auth Panel */
+        .auth-panel {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .auth-card {
+            background: rgba(25, 25, 35, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 48px;
+            padding: 40px 48px;
+            width: 100%;
+            max-width: 460px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: 0.2s;
+        }
+
+        .logo-brand {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo-brand i {
+            font-size: 48px;
+            color: #1db954;
+            background: linear-gradient(135deg, #1ed760, #1db954);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .logo-brand h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #b3b3b3);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-top: 8px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 40px;
+            font-size: 16px;
+            color: white;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: #1db954;
+            box-shadow: 0 0 0 2px rgba(29,185,84,0.3);
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 14px;
+            background: #1db954;
+            border: none;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 16px;
+            color: black;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 12px;
+        }
+
+        .auth-btn:hover {
+            background: #1ed760;
+            transform: scale(1.02);
+        }
+
+        .toggle-auth {
+            text-align: center;
+            margin-top: 24px;
+            color: #a7a7a7;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .toggle-auth span {
+            color: #1db954;
+            font-weight: 600;
+        }
+
+        .error-msg {
+            color: #f15e5e;
+            font-size: 13px;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        /* MUSIC PLAYER LAYOUT (setelah login) */
+        .player-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            gap: 20px;
+            padding: 24px 28px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 28px;
+            padding: 24px 16px;
+            backdrop-filter: blur(8px);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 16px;
+            margin: 8px 0;
+            border-radius: 28px;
+            color: #e0e0e0;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-item.active, .nav-item:hover {
+            background: rgba(29,185,84,0.2);
+            color: #1db954;
+        }
+
+        .playlist-section {
+            margin-top: 40px;
+        }
+
+        .playlist-item {
+            padding: 10px 16px;
+            font-size: 14px;
+            color: #b3b3b3;
+            cursor: pointer;
+            border-radius: 20px;
+            transition: 0.1s;
+        }
+
+        .playlist-item:hover {
+            color: white;
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* Main content music */
+        .main-music {
+            flex: 1;
+            background: rgba(0,0,0,0.25);
+            border-radius: 28px;
+            padding: 20px 28px;
+            overflow-y: auto;
+            backdrop-filter: blur(4px);
+        }
+
+        .greeting {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 28px;
+        }
+
+        .track-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .track-item {
+            background: rgba(255,255,255,0.03);
+            border-radius: 20px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: 0.2s;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .track-item:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(29,185,84,0.3);
+        }
+
+        .track-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .track-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(145deg, #2a2a3a, #1a1a2a);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #1db954;
+        }
+
+        .track-name {
+            font-weight: 600;
+        }
+
+        .track-artist {
+            font-size: 13px;
+            color: #aaa;
+        }
+
+        .play-indicator {
+            color: #1db954;
+            font-size: 20px;
+        }
+
+        /* Now playing bar */
+        .now-playing-bar {
+            background: rgba(10,10,15,0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255,255,255,0.08);
+            padding: 16px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .track-detail {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            min-width: 180px;
+        }
+
+        .mini-cover {
+            width: 56px;
+            height: 56px;
+            background: #1f1f2f;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: #1db954;
+        }
+
+        .player-controls {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .control-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+
+        .control-btn:hover {
+            color: #1db954;
+            transform: scale(1.05);
+        }
+
+        .progress-area {
+            flex: 1;
+            min-width: 200px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .time {
+            font-size: 12px;
+            color: #ccc;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 5px;
+            background: #3a3a4a;
+            border-radius: 5px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: #1db954;
+            border-radius: 5px;
+            position: relative;
+        }
+
+        /* Scroll */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e1e2a;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1db954;
+            border-radius: 10px;
+        }
+        @media (max-width: 780px) {
+            .player-layout {
+                flex-direction: column;
+                padding: 16px;
+            }
+            .sidebar {
+                width: 100%;
+                display: flex;
+                gap: 12px;
+                overflow-x: auto;
+            }
+            .nav-item {
+                padding: 10px 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container" id="appRoot">
+    <!-- AUTH PANEL -->
+    <div id="authPanel" class="auth-panel">
+        <div class="auth-card">
+            <div class="logo-brand">
+                <i class="fas fa-headphones"></i>
+                <h1>HarmonyFlow</h1>
+                <p style="color:#aaa; font-size:14px; margin-top:8px;">Stream your vibe</p>
+            </div>
+            <div id="authFormContainer">
+                <div id="loginForm">
+                    <div class="input-group"><input type="email" id="loginEmail" placeholder="Email address" autocomplete="email"></div>
+                    <div class="input-group"><input type="password" id="loginPassword" placeholder="Password"></div>
+                    <button class="auth-btn" id="loginBtn">Log in</button>
+                    <div class="toggle-auth" id="showRegister">Don't have an account? <span>Sign up</span></div>
+                    <div id="loginError" class="error-msg"></div>
+                </div>
+                <div id="registerForm" style="display: none;">
+                    <div class="input-group"><input type="email" id="regEmail" placeholder="Email address"></div>
+                    <div class="input-group"><input type="password" id="regPassword" placeholder="Password"></div>
+                    <div class="input-group"><input type="password" id="regConfirm" placeholder="Confirm password"></div>
+                    <button class="auth-btn" id="registerBtn">Create account</button>
+                    <div class="toggle-auth" id="showLogin"><span>← Back to Login</span></div>
+                    <div id="regError" class="error-msg"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN MUSIC APP (after login) -->
+    <div id="musicApp" class="main-content">
+        <div class="player-layout">
+            <!-- Sidebar Navigation -->
+            <div class="sidebar">
+                <div class="nav-item active" data-nav="home"><i class="fas fa-home"></i><span>Home</span></div>
+                <div class="nav-item" data-nav="liked"><i class="fas fa-heart"></i><span>Liked Songs</span></div>
+                <div class="playlist-section">
+                    <div class="playlist-item" data-playlist="chill"><i class="fas fa-cloud-moon"></i>  Chill Mix</div>
+                    <div class="playlist-item" data-playlist="focus"><i class="fas fa-brain"></i>  Focus Flow</div>
+                </div>
+                <div style="margin-top: 40px;"><div class="nav-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>Logout</span></div></div>
+            </div>
+            <!-- Main Track List -->
+            <div class="main-music" id="mainMusicArea">
+                <div class="greeting" id="greetingText">Welcome back, <span id="userEmailDisplay"></span> 🎧</div>
+                <div id="trackListContainer" class="track-list"></div>
+            </div>
+        </div>
+        <!-- Now Playing Bar -->
+        <div class="now-playing-bar" id="nowPlayingBar">
+            <div class="track-detail">
+                <div class="mini-cover"><i class="fas fa-music"></i></div>
+                <div><div id="nowPlayingTitle">Select a song</div><div style="font-size:12px; color:#aaa;" id="nowPlayingArtist">HarmonyFlow</div></div>
+            </div>
+            <div class="player-controls">
+                <button class="control-btn" id="prevBtn"><i class="fas fa-step-backward"></i></button>
+                <button class="control-btn" id="playPauseBtn"><i class="fas fa-play-circle" style="font-size:36px;"></i></button>
+                <button class="control-btn" id="nextBtn"><i class="fas fa-step-forward"></i></button>
+            </div>
+            <div class="progress-area">
+                <span class="time" id="currentTime">0:00</span>
+                <div class="progress-bar" id="progressBarContainer"><div class="progress-fill" id="progressFill"></div></div>
+                <span class="time" id="durationTime">0:00</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- MUSIC DATABASE ----------
+    const SONGS = [
+        { id: 1, title: "Blinding Lights", artist: "The Weeknd", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", duration: 210, liked: false, category: "chill" },
+        { id: 2, title: "Levitating", artist: "Dua Lipa", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", duration: 203, liked: false, category: "focus" },
+        { id: 3, title: "Save Your Tears", artist: "The Weeknd", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", duration: 215, liked: false, category: "chill" },
+        { id: 4, title: "Stay", artist: "Kid LAROI", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", duration: 182, liked: false, category: "focus" },
+        { id: 5, title: "Bad Habits", artist: "Ed Sheeran", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3", duration: 231, liked: false, category: "chill" },
+        { id: 6, title: "Peaches", artist: "Justin Bieber", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3", duration: 198, liked: false, category: "focus" }
+    ];
+
+    // Local storage users
+    let users = JSON.parse(localStorage.getItem("harmony_users")) || [];
+    let currentUser = null;
+    let currentPlaylist = "all"; // all, liked, chill, focus
+    let currentTrackIndex = 0;
+    let isPlaying = false;
+    let audioPlayer = new Audio();
+    let currentQueue = [...SONGS];
+
+    // DOM elements
+    const authPanel = document.getElementById('authPanel');
+    const musicApp = document.getElementById('musicApp');
+    const loginFormDiv = document.getElementById('loginForm');
+    const registerFormDiv = document.getElementById('registerForm');
+    const loginError = document.getElementById('loginError');
+    const regError = document.getElementById('regError');
+    const trackContainer = document.getElementById('trackListContainer');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const progressFill = document.getElementById('progressFill');
+    const progressBarContainer = document.getElementById('progressBarContainer');
+    const currentTimeSpan = document.getElementById('currentTime');
+    const durationTimeSpan = document.getElementById('durationTime');
+    const nowPlayingTitle = document.getElementById('nowPlayingTitle');
+    const nowPlayingArtist = document.getElementById('nowPlayingArtist');
+    const userEmailSpan = document.getElementById('userEmailDisplay');
+
+    // Helper: update user's liked songs
+    function syncLikedToStorage() {
+        if (!currentUser) return;
+        const userData = users.find(u => u.email === currentUser.email);
+        if (userData) {
+            userData.likedSongs = SONGS.filter(s => s.liked).map(s => s.id);
+            localStorage.setItem("harmony_users", JSON.stringify(users));
+        }
+    }
+
+    function loadLikedFromStorage() {
+        if (!currentUser) return;
+        const userData = users.find(u => u.email === currentUser.email);
+        if (userData && userData.likedSongs) {
+            userData.likedSongs.forEach(id => {
+                const song = SONGS.find(s => s.id === id);
+                if (song) song.liked = true;
+            });
+        }
+    }
+
+    // Render tracks based on playlist (all, liked, chill, focus)
+    function getFilteredTracks() {
+        if (currentPlaylist === "liked") return SONGS.filter(s => s.liked === true);
+        if (currentPlaylist === "chill") return SONGS.filter(s => s.category === "chill");
+        if (currentPlaylist === "focus") return SONGS.filter(s => s.category === "focus");
+        return [...SONGS];
+    }
+
+    function updateQueueAndIndex(resetIndex = true) {
+        currentQueue = getFilteredTracks();
+        if (resetIndex) currentTrackIndex = 0;
+        if (currentQueue.length === 0) {
+            // no tracks
+            nowPlayingTitle.innerText = "No tracks";
+            nowPlayingArtist.innerText = "Add liked songs";
+            if (audioPlayer.src) audioPlayer.pause();
+            isPlaying = false;
+            playPauseBtn.innerHTML = '<i class="fas fa-play-circle" style="font-size:36px;"></i>';
+        } else {
+            if (currentTrackIndex >= currentQueue.length) currentTrackIndex = 0;
+            loadTrack(currentQueue[currentTrackIndex]);
+        }
+        renderTrackList();
+    }
+
+    function renderTrackList() {
+        const tracks = getFilteredTracks();
+        trackContainer.innerHTML = '';
+        tracks.forEach((track, idx) => {
+            const trackDiv = document.createElement('div');
+            trackDiv.className = 'track-item';
+            trackDiv.innerHTML = `
+                <div class="track-info">
+                    <div class="track-icon"><i class="fas fa-music"></i></div>
+                    <div>
+                        <div class="track-name">${escapeHtml(track.title)}</div>
+                        <div class="track-artist">${escapeHtml(track.artist)}</div>
+                    </div>
+                </div>
+                <div class="play-indicator">
+                    ${track.liked ? '<i class="fas fa-heart" style="color:#1db954;"></i>' : '<i class="far fa-heart"></i>'}
+                </div>
+            `;
+            trackDiv.addEventListener('click', (e) => {
+                if(e.target.closest('.play-indicator')) return;
+                const globalIdx = currentQueue.findIndex(t => t.id === track.id);
+                if(globalIdx !== -1) {
+                    currentTrackIndex = globalIdx;
+                    loadTrack(track);
+                    playMusic();
+                } else {
+                    updateQueueAndIndex(true);
+                    const newIdx = currentQueue.findIndex(t => t.id === track.id);
+                    if(newIdx !== -1) {
+                        currentTrackIndex = newIdx;
+                        loadTrack(currentQueue[currentTrackIndex]);
+                        playMusic();
+                    }
+                }
+            });
+            const likeIcon = trackDiv.querySelector('.play-indicator i');
+            likeIcon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                track.liked = !track.liked;
+                syncLikedToStorage();
+                if(currentPlaylist === 'liked') {
+                    updateQueueAndIndex(true);
+                } else {
+                    renderTrackList();
+                    if (currentPlaylist === 'liked' && !track.liked && currentQueue.length === 0) {
+                        updateQueueAndIndex(true);
+                    }
+                }
+            });
+            trackContainer.appendChild(trackDiv);
+        });
+    }
+
+    function loadTrack(track) {
+        if (!track) return;
+        audioPlayer.src = track.src;
+        nowPlayingTitle.innerText = track.title;
+        nowPlayingArtist.innerText = track.artist;
+        audioPlayer.load();
+        if (isPlaying) {
+            audioPlayer.play().catch(e => console.log("play error", e));
+        }
+        updatePlayPauseIcon();
+        audioPlayer.addEventListener('loadedmetadata', () => {
+            durationTimeSpan.innerText = formatTime(audioPlayer.duration);
+        });
+    }
+
+    function playMusic() {
+        if (currentQueue.length === 0) return;
+        audioPlayer.play().then(() => {
+            isPlaying = true;
+            updatePlayPauseIcon();
+        }).catch(err => console.log("autoplay blocked?"));
+    }
+
+    function pauseMusic() {
+        audioPlayer.pause();
+        isPlaying = false;
+        updatePlayPauseIcon();
+    }
+
+    function updatePlayPauseIcon() {
+        if (isPlaying) {
+            playPauseBtn.innerHTML = '<i class="fas fa-pause-circle" style="font-size:36px;"></i>';
+        } else {
+            playPauseBtn.innerHTML = '<i class="fas fa-play-circle" style="font-size:36px;"></i>';
+        }
+    }
+
+    function nextTrack() {
+        if (currentQueue.length === 0) return;
+        currentTrackIndex = (currentTrackIndex + 1) % currentQueue.length;
+        loadTrack(currentQueue[currentTrackIndex]);
+        if (isPlaying) audioPlayer.play();
+    }
+
+    function prevTrack() {
+        if (currentQueue.length === 0) return;
+        currentTrackIndex = (currentTrackIndex - 1 + currentQueue.length) % currentQueue.length;
+        loadTrack(currentQueue[currentTrackIndex]);
+        if (isPlaying) audioPlayer.play();
+    }
+
+    function formatTime(seconds) {
+        if (isNaN(seconds)) return "0:00";
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    audioPlayer.addEventListener('timeupdate', () => {
+        if (audioPlayer.duration) {
+            const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+            progressFill.style.width = percent + '%';
+            currentTimeSpan.innerText = formatTime(audioPlayer.currentTime);
+        }
+    });
+    audioPlayer.addEventListener('ended', () => {
+        nextTrack();
+    });
+    progressBarContainer.addEventListener('click', (e) => {
+        const rect = progressBarContainer.getBoundingClientRect();
+        const percent = (e.clientX - rect.left) / rect.width;
+        if (audioPlayer.duration) {
+            audioPlayer.currentTime = percent * audioPlayer.duration;
+        }
+    });
+    playPauseBtn.addEventListener('click', () => {
+        if (currentQueue.length === 0) return;
+        if (isPlaying) pauseMusic();
+        else playMusic();
+    });
+    nextBtn.addEventListener('click', nextTrack);
+    prevBtn.addEventListener('click', prevTrack);
+
+    function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+    // Navigation & playlist switching
+    document.querySelectorAll('.nav-item[data-nav]').forEach(nav => {
+        nav.addEventListener('click', (e) => {
+            const navType = nav.getAttribute('data-nav');
+            if (navType === 'home') currentPlaylist = 'all';
+            else if (navType === 'liked') currentPlaylist = 'liked';
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            nav.classList.add('active');
+            updateQueueAndIndex(true);
+        });
+    });
+    document.querySelectorAll('.playlist-item').forEach(play => {
+        play.addEventListener('click', () => {
+            const pl = play.getAttribute('data-playlist');
+            if(pl === 'chill') currentPlaylist = 'chill';
+            if(pl === 'focus') currentPlaylist = 'focus';
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            updateQueueAndIndex(true);
+        });
+    });
+
+    // Authentication Logic
+    function showAuth(showLogin) {
+        if (showLogin) {
+            loginFormDiv.style.display = 'block';
+            registerFormDiv.style.display = 'none';
+        } else {
+            loginFormDiv.style.display = 'none';
+            registerFormDiv.style.display = 'block';
+        }
+        loginError.innerText = '';
+        regError.innerText = '';
+    }
+
+    function register(email, pwd, confirm) {
+        if (!email || !pwd) { regError.innerText = "Email & password required"; return false; }
+        if (pwd !== confirm) { regError.innerText = "Passwords don't match"; return false; }
+        if (users.find(u => u.email === email)) { regError.innerText = "Email already exists"; return false; }
+        users.push({ email: email, password: pwd, likedSongs: [] });
+        localStorage.setItem("harmony_users", JSON.stringify(users));
+        regError.innerText = "Account created! Please login.";
+        setTimeout(() => showAuth(true), 1200);
+        return true;
+    }
+
+    function login(email, pwd) {
+        const user = users.find(u => u.email === email && u.password === pwd);
+        if (!user) { loginError.innerText = "Invalid credentials"; return false; }
+        currentUser = { email: user.email };
+        // reset all liked flags
+        SONGS.forEach(s => s.liked = false);
+        if (user.likedSongs) user.likedSongs.forEach(id => { const s = SONGS.find(song => song.id === id); if(s) s.liked = true; });
+        // apply default queue
+        currentPlaylist = 'all';
+        updateQueueAndIndex(true);
+        userEmailSpan.innerText = email.split('@')[0];
+        authPanel.style.display = 'none';
+        musicApp.classList.add('active');
+        return true;
+    }
+
+    function logout() {
+        currentUser = null;
+        audioPlayer.pause();
+        isPlaying = false;
+        musicApp.classList.remove('active');
+        authPanel.style.display = 'flex';
+        document.getElementById('loginEmail').value = '';
+        document.getElementById('loginPassword').value = '';
+        showAuth(true);
+    }
+
+    document.getElementById('loginBtn').addEventListener('click', () => {
+        const email = document.getElementById('loginEmail').value.trim();
+        const pass = document.getElementById('loginPassword').value;
+        login(email, pass);
+    });
+    document.getElementById('registerBtn').addEventListener('click', () => {
+        const email = document.getElementById('regEmail').value.trim();
+        const pass = document.getElementById('regPassword').value;
+        const confirm = document.getElementById('regConfirm').value;
+        register(email, pass, confirm);
+    });
+    document.getElementById('showRegister').addEventListener('click', () => showAuth(false));
+    document.getElementById('showLogin').addEventListener('click', () => showAuth(true));
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+
+    // initial state
+    showAuth(true);
+    // preload test if any existing user in localstorage
+    if (users.length === 0) {
+        users.push({ email: "demo@harmony.com", password: "123456", likedSongs: [1,4] });
+        localStorage.setItem("harmony_users", JSON.stringify(users));
+    }
+</script>
+</body>
+</html>
