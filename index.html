@@ -2,9 +2,9 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>HarmonyFlow - Music Player</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>HarmonyCast · Catbox Music Player + Edit Lagu</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
@@ -13,714 +13,644 @@
             box-sizing: border-box;
             font-family: 'Inter', sans-serif;
         }
-
         body {
-            background: linear-gradient(135deg, #0a0a0f 0%, #12121c 100%);
+            background: radial-gradient(circle at 10% 20%, #0c0c12, #050508);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 24px;
         }
-
-        .app-container {
-            width: 100%;
+        .music-dashboard {
             max-width: 1400px;
-            height: 90vh;
-            background: rgba(18, 18, 28, 0.7);
-            backdrop-filter: blur(15px);
-            border-radius: 32px;
-            box-shadow: 0 25px 45px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s ease;
-        }
-
-        .main-content {
-            flex: 1;
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .main-content.active {
-            display: flex;
-        }
-
-        /* Auth Panel */
-        .auth-panel {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(5px);
-        }
-
-        .auth-card {
-            background: rgba(25, 25, 35, 0.95);
-            backdrop-filter: blur(20px);
+            width: 100%;
+            background: rgba(12, 12, 20, 0.65);
+            backdrop-filter: blur(16px);
             border-radius: 48px;
-            padding: 40px 48px;
-            width: 100%;
-            max-width: 460px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .logo-brand {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
-        .logo-brand i {
-            font-size: 48px;
-            background: linear-gradient(135deg, #1ed760, #1db954);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .logo-brand h1 {
-            font-size: 28px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #fff, #b3b3b3);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 16px 20px;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 40px;
-            font-size: 16px;
-            color: white;
-            outline: none;
-            transition: 0.2s;
-        }
-
-        .input-group input:focus {
-            border-color: #1db954;
-            box-shadow: 0 0 0 2px rgba(29,185,84,0.3);
-        }
-
-        .auth-btn {
-            width: 100%;
-            padding: 14px;
-            background: #1db954;
-            border: none;
-            border-radius: 40px;
-            font-weight: 700;
-            font-size: 16px;
-            color: black;
-            cursor: pointer;
-            margin-top: 12px;
-            transition: 0.2s;
-        }
-
-        .auth-btn:hover {
-            background: #1ed760;
-            transform: scale(1.02);
-        }
-
-        .toggle-auth {
-            text-align: center;
-            margin-top: 24px;
-            color: #a7a7a7;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .toggle-auth span {
-            color: #1db954;
-            font-weight: 600;
-        }
-
-        .error-msg {
-            color: #f15e5e;
-            font-size: 13px;
-            margin-top: 8px;
-            text-align: center;
-        }
-
-        /* Player Layout */
-        .player-layout {
-            display: flex;
-            flex: 1;
+            border: 1px solid rgba(255,255,255,0.06);
+            box-shadow: 0 30px 50px rgba(0,0,0,0.5);
             overflow: hidden;
-            gap: 20px;
-            padding: 24px 28px;
         }
-
-        .sidebar {
-            width: 260px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 28px;
-            padding: 24px 16px;
-            backdrop-filter: blur(8px);
-        }
-
-        .nav-item {
+        .app-header {
+            padding: 24px 32px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
             display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 14px 16px;
-            margin: 8px 0;
-            border-radius: 28px;
-            color: #e0e0e0;
-            transition: 0.2s;
-            cursor: pointer;
-        }
-
-        .nav-item.active, .nav-item:hover {
-            background: rgba(29,185,84,0.2);
-            color: #1db954;
-        }
-
-        .playlist-section {
-            margin-top: 40px;
-        }
-
-        .playlist-item {
-            padding: 10px 16px;
-            font-size: 14px;
-            color: #b3b3b3;
-            cursor: pointer;
-            border-radius: 20px;
-            transition: 0.1s;
-        }
-
-        .playlist-item:hover {
-            color: white;
-            background: rgba(255,255,255,0.05);
-        }
-
-        .main-music {
-            flex: 1;
-            background: rgba(0,0,0,0.25);
-            border-radius: 28px;
-            padding: 20px 28px;
-            overflow-y: auto;
-            backdrop-filter: blur(4px);
-        }
-
-        .greeting {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 28px;
-        }
-
-        .track-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .track-item {
-            background: rgba(255,255,255,0.03);
-            border-radius: 20px;
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
             justify-content: space-between;
-            transition: 0.2s;
-            cursor: pointer;
-            border: 1px solid transparent;
-        }
-
-        .track-item:hover {
-            background: rgba(255,255,255,0.08);
-            border-color: rgba(29,185,84,0.3);
-        }
-
-        .track-info {
-            display: flex;
             align-items: center;
-            gap: 20px;
-        }
-
-        .track-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(145deg, #2a2a3a, #1a1a2a);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: #1db954;
-        }
-
-        .track-name {
-            font-weight: 600;
-        }
-
-        .track-artist {
-            font-size: 13px;
-            color: #aaa;
-        }
-
-        .play-indicator {
-            color: #1db954;
-            font-size: 20px;
-        }
-
-        /* Now playing bar */
-        .now-playing-bar {
-            background: rgba(10,10,15,0.95);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255,255,255,0.08);
-            padding: 16px 28px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
             flex-wrap: wrap;
             gap: 16px;
         }
-
-        .track-detail {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            min-width: 180px;
-        }
-
-        .mini-cover {
-            width: 56px;
-            height: 56px;
-            background: #1f1f2f;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            color: #1db954;
-        }
-
-        .player-controls {
-            display: flex;
-            gap: 24px;
-            align-items: center;
-        }
-
-        .control-btn {
-            background: transparent;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            transition: 0.1s;
-        }
-
-        .control-btn:hover {
-            color: #1db954;
-            transform: scale(1.05);
-        }
-
-        .progress-area {
-            flex: 1;
-            min-width: 200px;
+        .logo-area {
             display: flex;
             align-items: center;
             gap: 12px;
         }
-
-        .time {
-            font-size: 12px;
-            color: #ccc;
+        .logo-icon {
+            background: linear-gradient(145deg, #1DB954, #14833b);
+            width: 44px;
+            height: 44px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            color: white;
         }
-
-        .progress-bar {
+        .logo-area h1 {
+            font-size: 26px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #c0c0c0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .badge-cat {
+            background: rgba(29,185,84,0.12);
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 13px;
+            color: #1DB954;
+            border: 1px solid rgba(29,185,84,0.3);
+        }
+        .player-grid {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .playlist-panel {
+            flex: 2;
+            min-width: 280px;
+            background: rgba(0,0,0,0.25);
+            border-radius: 32px;
+            margin: 20px 0 20px 24px;
+            padding: 20px;
+            height: 55vh;
+            overflow-y: auto;
+        }
+        .visualizer-panel {
+            flex: 1.5;
+            margin: 20px 24px 20px 12px;
+            background: rgba(0,0,0,0.25);
+            border-radius: 32px;
+            padding: 20px;
+        }
+        .add-song-card {
+            background: rgba(255,255,255,0.03);
+            border-radius: 28px;
+            padding: 16px 20px;
+            margin-bottom: 28px;
+        }
+        .input-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        .input-field {
             flex: 1;
-            height: 5px;
-            background: #3a3a4a;
-            border-radius: 5px;
-            cursor: pointer;
-            position: relative;
         }
-
+        .input-field label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #aaa;
+        }
+        .input-field input {
+            width: 100%;
+            background: #101014;
+            border: 1px solid #2a2a32;
+            border-radius: 40px;
+            padding: 12px 16px;
+            color: white;
+            outline: none;
+        }
+        .btn-primary {
+            background: #1DB954;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 40px;
+            font-weight: 700;
+            color: #000;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .track-item {
+            background: rgba(255,255,255,0.03);
+            margin-bottom: 8px;
+            border-radius: 20px;
+            padding: 12px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .track-item.active-track {
+            background: rgba(29,185,84,0.15);
+            border-left: 4px solid #1DB954;
+        }
+        .track-info {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            flex: 1;
+        }
+        .track-title {
+            font-weight: 600;
+        }
+        .track-artist {
+            font-size: 12px;
+            color: #aaa;
+        }
+        .track-actions button {
+            background: none;
+            border: none;
+            color: #aaa;
+            cursor: pointer;
+            margin-left: 8px;
+            font-size: 16px;
+        }
+        .track-actions button:hover {
+            color: #1DB954;
+        }
+        .track-delete:hover {
+            color: #ff5e7e !important;
+        }
+        .vinyl-container {
+            text-align: center;
+        }
+        .vinyl-disc {
+            width: 180px;
+            height: 180px;
+            background: radial-gradient(circle, #2a2a35 10%, #111 80%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.5);
+        }
+        .vinyl-spin {
+            animation: spin 5s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .progress-bar {
+            background: #2e2e3a;
+            height: 6px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
         .progress-fill {
             width: 0%;
             height: 100%;
-            background: #1db954;
-            border-radius: 5px;
-        }
-
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #1e1e2a;
+            background: #1DB954;
             border-radius: 10px;
         }
-        ::-webkit-scrollbar-thumb {
-            background: #1db954;
-            border-radius: 10px;
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin: 20px 0;
         }
-
-        @media (max-width: 780px) {
-            .player-layout {
-                flex-direction: column;
-                padding: 16px;
-            }
-            .sidebar {
-                width: 100%;
-                display: flex;
-                gap: 12px;
-                overflow-x: auto;
-            }
-            .nav-item {
-                padding: 10px 18px;
-            }
+        .ctrl-btn {
+            background: #1f1f2c;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .ctrl-btn-big {
+            background: #1DB954;
+            width: 60px;
+            height: 60px;
+            font-size: 28px;
+            color: black;
+        }
+        .extra-features {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin: 12px 0;
+        }
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #aaa;
+        }
+        .lyrics-box {
+            background: rgba(0,0,0,0.5);
+            border-radius: 24px;
+            padding: 16px;
+            font-size: 14px;
+            color: #ddd;
+            margin-top: 20px;
+            text-align: center;
+        }
+        @media (max-width: 820px) {
+            .player-grid { flex-direction: column; }
+            .playlist-panel, .visualizer-panel { margin: 12px; }
         }
     </style>
 </head>
 <body>
-<div class="app-container" id="appRoot">
-    <!-- AUTH PANEL -->
-    <div id="authPanel" class="auth-panel">
-        <div class="auth-card">
-            <div class="logo-brand">
-                <i class="fas fa-headphones"></i>
-                <h1>HarmonyFlow</h1>
-                <p style="color:#aaa; font-size:14px; margin-top:8px;">Stream your vibe</p>
-            </div>
-            <div id="authFormContainer">
-                <div id="loginForm">
-                    <div class="input-group"><input type="email" id="loginEmail" placeholder="Email address"></div>
-                    <div class="input-group"><input type="password" id="loginPassword" placeholder="Password"></div>
-                    <button class="auth-btn" id="loginBtn">Log in</button>
-                    <div class="toggle-auth" id="showRegister">Don't have an account? <span>Sign up</span></div>
-                    <div id="loginError" class="error-msg"></div>
-                </div>
-                <div id="registerForm" style="display: none;">
-                    <div class="input-group"><input type="email" id="regEmail" placeholder="Email address"></div>
-                    <div class="input-group"><input type="password" id="regPassword" placeholder="Password"></div>
-                    <div class="input-group"><input type="password" id="regConfirm" placeholder="Confirm password"></div>
-                    <button class="auth-btn" id="registerBtn">Create account</button>
-                    <div class="toggle-auth" id="showLogin"><span>← Back to Login</span></div>
-                    <div id="regError" class="error-msg"></div>
-                </div>
-            </div>
+<div class="music-dashboard">
+    <div class="app-header">
+        <div class="logo-area">
+            <div class="logo-icon"><i class="fas fa-head-side-headphones"></i></div>
+            <h1>HarmonyCast</h1>
+            <div class="badge-cat"><i class="fab fa-cat"></i> Catbox.moe + Edit</div>
         </div>
     </div>
-
-    <!-- MAIN MUSIC APP -->
-    <div id="musicApp" class="main-content">
-        <div class="player-layout">
-            <div class="sidebar">
-                <div class="nav-item active" data-nav="home"><i class="fas fa-home"></i><span>Home</span></div>
-                <div class="nav-item" data-nav="liked"><i class="fas fa-heart"></i><span>Liked Songs</span></div>
-                <div class="playlist-section">
-                    <div class="playlist-item" data-playlist="chill"><i class="fas fa-cloud-moon"></i>  Chill Mix</div>
-                    <div class="playlist-item" data-playlist="focus"><i class="fas fa-brain"></i>  Focus Flow</div>
-                    <div class="playlist-item" data-playlist="trending"><i class="fas fa-fire"></i>  Trending</div>
+    <div class="player-grid">
+        <div class="playlist-panel">
+            <div class="add-song-card">
+                <h4 style="margin-bottom: 12px;"><i class="fas fa-plus-circle"></i> Tambah Lagu</h4>
+                <div class="input-row">
+                    <div class="input-field"><label>Link MP3 (Catbox)</label><input type="text" id="songUrl" placeholder="https://files.catbox.moe/xxxx.mp3"></div>
+                    <div class="input-field"><label>Judul</label><input type="text" id="songTitle" placeholder="Judul"></div>
+                    <div class="input-field"><label>Artis</label><input type="text" id="songArtist" placeholder="Artis"></div>
+                    <button class="btn-primary" id="addSongBtn"><i class="fas fa-plus"></i> Tambah</button>
                 </div>
-                <div style="margin-top: 40px;"><div class="nav-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>Logout</span></div></div>
+                <div id="urlError" style="color:#f55; font-size:12px; margin-top:6px;"></div>
             </div>
-            <div class="main-music" id="mainMusicArea">
-                <div class="greeting">Welcome back, <span id="userEmailDisplay"></span> 🎧</div>
-                <div id="trackListContainer" class="track-list"></div>
-            </div>
+            <div id="playlistContainer" class="track-list"></div>
+            <div id="emptyPlaylistMsg" style="text-align:center; padding:40px; color:#6a6a7a;"><i class="fas fa-music"></i> Belum ada lagu. Tambah dari Catbox!</div>
         </div>
-        <div class="now-playing-bar">
-            <div class="track-detail">
-                <div class="mini-cover"><i class="fas fa-music"></i></div>
-                <div><div id="nowPlayingTitle">Select a song</div><div style="font-size:12px; color:#aaa;" id="nowPlayingArtist">HarmonyFlow</div></div>
+        <div class="visualizer-panel">
+            <div class="vinyl-container">
+                <div class="vinyl-disc" id="vinylDisc"><i class="fas fa-record-vinyl" style="font-size:80px; color:#1DB954;"></i></div>
+                <h3 id="nowPlayingTitle">Belum ada lagu</h3>
+                <p id="nowPlayingArtist">-</p>
             </div>
-            <div class="player-controls">
-                <button class="control-btn" id="prevBtn"><i class="fas fa-step-backward"></i></button>
-                <button class="control-btn" id="playPauseBtn"><i class="fas fa-play-circle" style="font-size:36px;"></i></button>
-                <button class="control-btn" id="nextBtn"><i class="fas fa-step-forward"></i></button>
+            <div class="progress-section">
+                <div class="time-info"><span id="currentTime">0:00</span><span id="durationTime">0:00</span></div>
+                <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
             </div>
-            <div class="progress-area">
-                <span class="time" id="currentTime">0:00</span>
-                <div class="progress-bar" id="progressBarContainer"><div class="progress-fill" id="progressFill"></div></div>
-                <span class="time" id="durationTime">0:00</span>
+            <div class="controls">
+                <button class="ctrl-btn" id="shuffleBtn"><i class="fas fa-random"></i></button>
+                <button class="ctrl-btn" id="prevBtn"><i class="fas fa-step-backward"></i></button>
+                <button class="ctrl-btn ctrl-btn-big" id="playPauseBtn"><i class="fas fa-play"></i></button>
+                <button class="ctrl-btn" id="nextBtn"><i class="fas fa-step-forward"></i></button>
+                <button class="ctrl-btn" id="repeatBtn"><i class="fas fa-redo-alt"></i></button>
             </div>
+            <div class="extra-features">
+                <select id="speedControl" style="background:#1a1a24; border-radius:40px; padding:6px 12px; color:white;">
+                    <option value="1">1.0x</option><option value="1.25">1.25x</option><option value="1.5">1.5x</option><option value="2">2.0x</option>
+                </select>
+                <button id="themeToggle" style="background: none; border:1px solid #2e2e3a; border-radius:40px; padding:6px 12px; color:white;"><i class="fas fa-moon"></i> Dark/Light</button>
+            </div>
+            <div class="lyrics-box" id="lyricsBox">🎤 Pilih lagu dan nikmati musik dari Catbox</div>
         </div>
     </div>
 </div>
 
 <script>
-    // ========== ⚠️ GANTI URL LAGU DI SINI ==========
-    // Kamu bisa menambah atau mengubah lagu pada array SONGS di bawah.
-    // Setiap lagu butuh: id, title, artist, src (URL MP3), duration (dalam detik), liked (false/true), category (chill/focus/trending)
-    // Contoh: { id: 1, title: "Judul", artist: "Artis", src: "https://contoh.com/lagu.mp3", duration: 210, liked: false, category: "trending" }
-    // ================================================
-    const SONGS = [
-        { id: 1, title: "Blinding Lights", artist: "The Weeknd", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", duration: 210, liked: false, category: "chill" },
-        { id: 2, title: "Levitating", artist: "Dua Lipa", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", duration: 203, liked: false, category: "focus" },
-        { id: 3, title: "Save Your Tears", artist: "The Weeknd", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", duration: 215, liked: false, category: "chill" },
-        { id: 4, title: "Stay", artist: "Kid LAROI", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", duration: 182, liked: false, category: "focus" },
-        { id: 5, title: "Bad Habits", artist: "Ed Sheeran", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3", duration: 231, liked: false, category: "chill" },
-        { id: 6, title: "Peaches", artist: "Justin Bieber", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3", duration: 198, liked: false, category: "focus" },
-        // ===== TAMBAH LAGU KAMU DI SINI =====
-        // Contoh: 
-        // { id: 7, title: "Mas Bahlil Ganteng", artist: "MBG", src: "https://link-mp3-kamu.com/lagu1.mp3", duration: 225, liked: false, category: "trending" },
-        // { id: 8, title: "Enau", artist: "Sesi Potret", src: "https://link-mp3-kamu.com/lagu2.mp3", duration: 198, liked: false, category: "trending" }
-    ];
-
-    // ========== JANGAN UBAH KODE DI BAWAH INI ==========
-    let users = JSON.parse(localStorage.getItem("harmony_users")) || [];
-    let currentUser = null;
-    let currentPlaylist = "all";
-    let currentTrackIndex = 0;
+    // ========== DATA & GLOBAL ==========
+    let playlist = JSON.parse(localStorage.getItem('harmonycast_playlist')) || [];
+    let currentSongIndex = 0;
     let isPlaying = false;
-    let audioPlayer = new Audio();
-    let currentQueue = [...SONGS];
+    let shuffleMode = false;
+    let repeatMode = false;
+    let audio = new Audio();
+    let currentQueueIndices = [];
 
-    // DOM Elements
-    const authPanel = document.getElementById('authPanel');
-    const musicApp = document.getElementById('musicApp');
-    const loginError = document.getElementById('loginError');
-    const regError = document.getElementById('regError');
-    const trackContainer = document.getElementById('trackListContainer');
+    // DOM elements
+    const playlistContainer = document.getElementById('playlistContainer');
+    const emptyMsg = document.getElementById('emptyPlaylistMsg');
+    const nowPlayingTitleSpan = document.getElementById('nowPlayingTitle');
+    const nowPlayingArtistSpan = document.getElementById('nowPlayingArtist');
     const playPauseBtn = document.getElementById('playPauseBtn');
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
     const progressFill = document.getElementById('progressFill');
-    const progressBarContainer = document.getElementById('progressBarContainer');
+    const progressBar = document.getElementById('progressBar');
     const currentTimeSpan = document.getElementById('currentTime');
-    const durationTimeSpan = document.getElementById('durationTime');
-    const nowPlayingTitle = document.getElementById('nowPlayingTitle');
-    const nowPlayingArtist = document.getElementById('nowPlayingArtist');
-    const userEmailSpan = document.getElementById('userEmailDisplay');
+    const durationSpan = document.getElementById('durationTime');
+    const vinylDisc = document.getElementById('vinylDisc');
+    const shuffleBtn = document.getElementById('shuffleBtn');
+    const repeatBtn = document.getElementById('repeatBtn');
+    const speedControl = document.getElementById('speedControl');
+    const themeToggle = document.getElementById('themeToggle');
+    const lyricsBox = document.getElementById('lyricsBox');
+    const addSongBtn = document.getElementById('addSongBtn');
+    const songUrlInput = document.getElementById('songUrl');
+    const songTitleInput = document.getElementById('songTitle');
+    const songArtistInput = document.getElementById('songArtist');
+    const urlErrorDiv = document.getElementById('urlError');
 
-    function syncLikedToStorage() {
-        if (!currentUser) return;
-        const userData = users.find(u => u.email === currentUser.email);
-        if (userData) {
-            userData.likedSongs = SONGS.filter(s => s.liked).map(s => s.id);
-            localStorage.setItem("harmony_users", JSON.stringify(users));
-        }
-    }
-
-    function loadLikedFromStorage() {
-        if (!currentUser) return;
-        const userData = users.find(u => u.email === currentUser.email);
-        if (userData && userData.likedSongs) {
-            userData.likedSongs.forEach(id => {
-                const song = SONGS.find(s => s.id === id);
-                if (song) song.liked = true;
-            });
-        }
-    }
-
-    function getFilteredTracks() {
-        if (currentPlaylist === "liked") return SONGS.filter(s => s.liked === true);
-        if (currentPlaylist === "chill") return SONGS.filter(s => s.category === "chill");
-        if (currentPlaylist === "focus") return SONGS.filter(s => s.category === "focus");
-        if (currentPlaylist === "trending") return SONGS.filter(s => s.category === "trending");
-        return [...SONGS];
-    }
-
-    function updateQueueAndIndex(resetIndex = true) {
-        currentQueue = getFilteredTracks();
-        if (resetIndex) currentTrackIndex = 0;
-        if (currentQueue.length === 0) {
-            nowPlayingTitle.innerText = "No tracks";
-            nowPlayingArtist.innerText = "Add songs or like some";
-            if (audioPlayer.src) audioPlayer.pause();
+    // ========== FUNGSI INTI ==========
+    function savePlaylist() {
+        localStorage.setItem('harmonycast_playlist', JSON.stringify(playlist));
+        renderPlaylist();
+        updateEmptyMsg();
+        if (playlist.length === 0 && audio.src) {
+            audio.pause();
             isPlaying = false;
-            playPauseBtn.innerHTML = '<i class="fas fa-play-circle" style="font-size:36px;"></i>';
-        } else {
-            if (currentTrackIndex >= currentQueue.length) currentTrackIndex = 0;
-            loadTrack(currentQueue[currentTrackIndex]);
+            updatePlayPauseButton();
+            nowPlayingTitleSpan.innerText = "Belum ada lagu";
+            nowPlayingArtistSpan.innerText = "-";
+            vinylDisc.classList.remove('vinyl-spin');
         }
-        renderTrackList();
     }
 
-    function renderTrackList() {
-        const tracks = getFilteredTracks();
-        trackContainer.innerHTML = '';
-        if (tracks.length === 0) {
-            trackContainer.innerHTML = '<div style="text-align:center; padding:40px; color:#aaa;"><i class="fas fa-heart-broken"></i> No songs in this playlist.</div>';
+    function updateEmptyMsg() {
+        if (playlist.length === 0) emptyMsg.style.display = "block";
+        else emptyMsg.style.display = "none";
+    }
+
+    function buildQueue() {
+        if (shuffleMode) {
+            let indices = Array.from(Array(playlist.length).keys());
+            for (let i = indices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [indices[i], indices[j]] = [indices[j], indices[i]];
+            }
+            currentQueueIndices = indices;
+        } else {
+            currentQueueIndices = Array.from(Array(playlist.length).keys());
+        }
+        if (currentQueueIndices.length > 0 && !currentQueueIndices.includes(currentSongIndex)) {
+            currentSongIndex = currentQueueIndices[0];
+        }
+    }
+
+    function loadSong(index) {
+        if (playlist.length === 0 || index < 0 || index >= playlist.length) return false;
+        const song = playlist[index];
+        audio.src = song.url;
+        audio.load();
+        nowPlayingTitleSpan.innerText = song.title;
+        nowPlayingArtistSpan.innerText = song.artist;
+        lyricsBox.innerHTML = `🎵 Now playing: ${song.title} — ${song.artist}<br>🔗 Stream dari Catbox.moe`;
+        if (isPlaying) {
+            audio.play().catch(e => console.log);
+            vinylDisc.classList.add('vinyl-spin');
+        } else {
+            vinylDisc.classList.remove('vinyl-spin');
+        }
+        updatePlayPauseButton();
+        renderPlaylist(); // refresh active highlight
+        return true;
+    }
+
+    function playCurrent() {
+        if (playlist.length === 0) return;
+        if (currentSongIndex === -1) currentSongIndex = 0;
+        audio.play().then(() => {
+            isPlaying = true;
+            vinylDisc.classList.add('vinyl-spin');
+            updatePlayPauseButton();
+        }).catch(e => console.log);
+    }
+
+    function pauseCurrent() {
+        audio.pause();
+        isPlaying = false;
+        vinylDisc.classList.remove('vinyl-spin');
+        updatePlayPauseButton();
+    }
+
+    function nextTrack() {
+        if (playlist.length === 0) return;
+        if (currentQueueIndices.length === 0) buildQueue();
+        let curPos = currentQueueIndices.indexOf(currentSongIndex);
+        if (curPos === -1) { buildQueue(); curPos = currentQueueIndices.indexOf(currentSongIndex); }
+        let nextPos = (curPos + 1) % currentQueueIndices.length;
+        if (repeatMode && currentQueueIndices.length === 1 && nextPos === 0) {
+            loadSong(currentSongIndex);
+            playCurrent();
             return;
         }
-        tracks.forEach(track => {
+        const nextIdx = currentQueueIndices[nextPos];
+        if (nextIdx !== undefined) {
+            currentSongIndex = nextIdx;
+            loadSong(currentSongIndex);
+            playCurrent();
+        } else if (!repeatMode && curPos === currentQueueIndices.length-1) {
+            pauseCurrent();
+            currentSongIndex = -1;
+        }
+    }
+
+    function prevTrack() {
+        if (playlist.length === 0) return;
+        if (currentQueueIndices.length === 0) buildQueue();
+        let curPos = currentQueueIndices.indexOf(currentSongIndex);
+        if (curPos === -1) { buildQueue(); curPos = currentQueueIndices.indexOf(currentSongIndex); }
+        let prevPos = (curPos - 1 + currentQueueIndices.length) % currentQueueIndices.length;
+        const prevIdx = currentQueueIndices[prevPos];
+        if (prevIdx !== undefined) {
+            currentSongIndex = prevIdx;
+            loadSong(currentSongIndex);
+            playCurrent();
+        }
+    }
+
+    function updatePlayPauseButton() {
+        playPauseBtn.innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+    }
+
+    // ========== RENDER PLAYLIST DENGAN TOMBOL EDIT & HAPUS ==========
+    function renderPlaylist() {
+        playlistContainer.innerHTML = '';
+        if (playlist.length === 0) {
+            emptyMsg.style.display = "block";
+            return;
+        }
+        emptyMsg.style.display = "none";
+        playlist.forEach((song, idx) => {
             const trackDiv = document.createElement('div');
-            trackDiv.className = 'track-item';
+            trackDiv.className = `track-item ${currentSongIndex === idx ? 'active-track' : ''}`;
             trackDiv.innerHTML = `
                 <div class="track-info">
-                    <div class="track-icon"><i class="fas fa-music"></i></div>
+                    <div><span style="font-weight:600;">${idx+1}</span></div>
                     <div>
-                        <div class="track-name">${escapeHtml(track.title)}</div>
-                        <div class="track-artist">${escapeHtml(track.artist)}</div>
+                        <div class="track-title">${escapeHtml(song.title)}</div>
+                        <div class="track-artist">${escapeHtml(song.artist)}</div>
                     </div>
                 </div>
-                <div class="play-indicator">
-                    ${track.liked ? '<i class="fas fa-heart" style="color:#1db954;"></i>' : '<i class="far fa-heart"></i>'}
+                <div class="track-actions">
+                    <button class="track-edit" data-idx="${idx}"><i class="fas fa-pencil-alt"></i></button>
+                    <button class="track-delete" data-idx="${idx}"><i class="fas fa-trash-alt"></i></button>
                 </div>
             `;
-            trackDiv.addEventListener('click', (e) => {
-                if(e.target.closest('.play-indicator')) return;
-                const idx = currentQueue.findIndex(t => t.id === track.id);
-                if(idx !== -1) {
-                    currentTrackIndex = idx;
-                    loadTrack(track);
-                    playMusic();
-                } else {
-                    updateQueueAndIndex(true);
-                    const newIdx = currentQueue.findIndex(t => t.id === track.id);
-                    if(newIdx !== -1) {
-                        currentTrackIndex = newIdx;
-                        loadTrack(currentQueue[currentTrackIndex]);
-                        playMusic();
-                    }
+            // Play saat klik area utama
+            trackDiv.querySelector('.track-info').addEventListener('click', (e) => {
+                e.stopPropagation();
+                currentSongIndex = idx;
+                buildQueue();
+                loadSong(currentSongIndex);
+                playCurrent();
+                renderPlaylist();
+            });
+            // Tombol Edit
+            const editBtn = trackDiv.querySelector('.track-edit');
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const newTitle = prompt("Edit judul lagu:", song.title);
+                const newArtist = prompt("Edit artis:", song.artist);
+                const newUrl = prompt("Edit URL MP3 (Catbox):", song.url);
+                if (newTitle && newTitle.trim()) song.title = newTitle.trim();
+                if (newArtist && newArtist.trim()) song.artist = newArtist.trim();
+                if (newUrl && newUrl.trim() && newUrl.match(/\.mp3$/i)) song.url = newUrl.trim();
+                else if (newUrl && newUrl.trim()) alert("URL harus berakhiran .mp3");
+                savePlaylist();
+                if (currentSongIndex === idx) {
+                    nowPlayingTitleSpan.innerText = song.title;
+                    nowPlayingArtistSpan.innerText = song.artist;
+                    audio.src = song.url;
+                    audio.load();
+                    if (isPlaying) audio.play();
                 }
             });
-            const likeIcon = trackDiv.querySelector('.play-indicator i');
-            likeIcon.addEventListener('click', (e) => {
+            // Tombol Hapus
+            const delBtn = trackDiv.querySelector('.track-delete');
+            delBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                track.liked = !track.liked;
-                syncLikedToStorage();
-                if(currentPlaylist === 'liked') updateQueueAndIndex(true);
-                else renderTrackList();
+                if (confirm(`Hapus "${song.title}" ?`)) {
+                    playlist.splice(idx, 1);
+                    if (playlist.length === 0) {
+                        audio.pause();
+                        isPlaying = false;
+                        nowPlayingTitleSpan.innerText = "Belum ada lagu";
+                        vinylDisc.classList.remove('vinyl-spin');
+                        currentSongIndex = -1;
+                    } else {
+                        if (currentSongIndex >= idx) currentSongIndex = Math.max(0, currentSongIndex-1);
+                        if (currentSongIndex >= playlist.length) currentSongIndex = playlist.length-1;
+                        buildQueue();
+                        if (currentSongIndex !== -1 && playlist[currentSongIndex]) loadSong(currentSongIndex);
+                        else if (playlist.length>0) { currentSongIndex=0; loadSong(0); }
+                    }
+                    savePlaylist();
+                }
             });
-            trackContainer.appendChild(trackDiv);
+            playlistContainer.appendChild(trackDiv);
         });
     }
 
-    function loadTrack(track) {
-        if (!track) return;
-        audioPlayer.src = track.src;
-        nowPlayingTitle.innerText = track.title;
-        nowPlayingArtist.innerText = track.artist;
-        audioPlayer.load();
-        if (isPlaying) audioPlayer.play().catch(e => console.log("play error"));
-        updatePlayPauseIcon();
-        audioPlayer.addEventListener('loadedmetadata', () => {
-            if (!isNaN(audioPlayer.duration)) durationTimeSpan.innerText = formatTime(audioPlayer.duration);
+    function addSong() {
+        let url = songUrlInput.value.trim();
+        let title = songTitleInput.value.trim();
+        let artist = songArtistInput.value.trim();
+        if (!url) { urlErrorDiv.innerText = "Masukkan link Catbox .mp3"; return; }
+        if (!url.match(/\.mp3$/i) || !url.includes('files.catbox.moe')) {
+            urlErrorDiv.innerText = "Harus link langsung .mp3 dari catbox.moe";
+            return;
+        }
+        if (!title) title = "Lagu dari Catbox";
+        if (!artist) artist = "Unknown Artist";
+        playlist.push({ url, title, artist });
+        savePlaylist();
+        if (playlist.length === 1 && !audio.src) {
+            currentSongIndex = 0;
+            buildQueue();
+            loadSong(0);
+        } else {
+            buildQueue();
+            renderPlaylist();
+        }
+        songUrlInput.value = '';
+        songTitleInput.value = '';
+        songArtistInput.value = '';
+        urlErrorDiv.innerText = '';
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m){
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
         });
-        if (audioPlayer.readyState >= 1) durationTimeSpan.innerText = formatTime(audioPlayer.duration);
     }
 
-    function playMusic() {
-        if (currentQueue.length === 0) return;
-        audioPlayer.play().then(() => { isPlaying = true; updatePlayPauseIcon(); }).catch(e => console.log);
-    }
-    function pauseMusic() { audioPlayer.pause(); isPlaying = false; updatePlayPauseIcon(); }
-    function updatePlayPauseIcon() {
-        playPauseBtn.innerHTML = isPlaying ? '<i class="fas fa-pause-circle" style="font-size:36px;"></i>' : '<i class="fas fa-play-circle" style="font-size:36px;"></i>';
-    }
-    function nextTrack() {
-        if (currentQueue.length === 0) return;
-        currentTrackIndex = (currentTrackIndex + 1) % currentQueue.length;
-        loadTrack(currentQueue[currentTrackIndex]);
-        if (isPlaying) audioPlayer.play();
-    }
-    function prevTrack() {
-        if (currentQueue.length === 0) return;
-        currentTrackIndex = (currentTrackIndex - 1 + currentQueue.length) % currentQueue.length;
-        loadTrack(currentQueue[currentTrackIndex]);
-        if (isPlaying) audioPlayer.play();
-    }
-    function formatTime(seconds) {
-        if (isNaN(seconds) || !isFinite(seconds)) return "0:00";
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    function formatTime(sec) {
+        if (isNaN(sec)) return "0:00";
+        let mins = Math.floor(sec / 60);
+        let s = Math.floor(sec % 60);
+        return `${mins}:${s < 10 ? '0' : ''}${s}`;
     }
 
-    audioPlayer.addEventListener('timeupdate', () => {
-        if (audioPlayer.duration && isFinite(audioPlayer.duration)) {
-            progressFill.style.width = (audioPlayer.currentTime / audioPlayer.duration) * 100 + '%';
-            currentTimeSpan.innerText = formatTime(audioPlayer.currentTime);
+    // ========== EVENT LISTENER ==========
+    audio.addEventListener('timeupdate', () => {
+        if (audio.duration && !isNaN(audio.duration)) {
+            const percent = (audio.currentTime / audio.duration) * 100;
+            progressFill.style.width = percent + '%';
+            currentTimeSpan.innerText = formatTime(audio.currentTime);
+            durationSpan.innerText = formatTime(audio.duration);
         }
     });
-    audioPlayer.addEventListener('ended', nextTrack);
-    progressBarContainer.addEventListener('click', (e) => {
-        const rect = progressBarContainer.getBoundingClientRect();
-        const percent = (e.clientX - rect.left) / rect.width;
-        if (audioPlayer.duration && isFinite(audioPlayer.duration)) audioPlayer.currentTime = percent * audioPlayer.duration;
+    audio.addEventListener('ended', () => {
+        if (repeatMode) {
+            loadSong(currentSongIndex);
+            playCurrent();
+        } else {
+            nextTrack();
+        }
     });
-    playPauseBtn.addEventListener('click', () => { if (currentQueue.length) isPlaying ? pauseMusic() : playMusic(); });
-    nextBtn.addEventListener('click', nextTrack);
+    progressBar.addEventListener('click', (e) => {
+        const rect = progressBar.getBoundingClientRect();
+        const perc = (e.clientX - rect.left) / rect.width;
+        if (audio.duration) audio.currentTime = perc * audio.duration;
+    });
+    playPauseBtn.addEventListener('click', () => {
+        if (playlist.length === 0) return;
+        if (isPlaying) pauseCurrent();
+        else playCurrent();
+    });
     prevBtn.addEventListener('click', prevTrack);
-    function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
-
-    // Navigation
-    document.querySelectorAll('.nav-item[data-nav]').forEach(nav => {
-        nav.addEventListener('click', () => {
-            const navType = nav.getAttribute('data-nav');
-            if (navType === 'home') currentPlaylist = 'all';
-            else if (navType === 'liked') currentPlaylist = 'liked';
-            document.querySelectorAll('.nav-item[data-nav]').forEach(n => n.classList.remove('active'));
-            nav.classList.add('active');
-            updateQueueAndIndex(true);
-        });
+    nextBtn.addEventListener('click', nextTrack);
+    shuffleBtn.addEventListener('click', () => {
+        shuffleMode = !shuffleMode;
+        buildQueue();
+        shuffleBtn.style.color = shuffleMode ? '#1DB954' : 'white';
     });
-    document.querySelectorAll('.playlist-item').forEach(play => {
-        play.addEventListener('click', () => {
-            const pl = play.getAttribute('data-playlist');
-            if (pl === 'chill') currentPlaylist = 'chill';
-            else if (pl === 'focus') currentPlaylist = 'focus';
-            else if (pl === 'trending') currentPlaylist = 'trending';
-            document.querySelectorAll('.nav-item[data-nav]').forEach(n => n.classList.remove('active'));
-            updateQueueAndIndex(true);
-        });
+    repeatBtn.addEventListener('click', () => {
+        repeatMode = !repeatMode;
+        repeatBtn.style.color = repeatMode ? '#1DB954' : 'white';
     });
+    speedControl.addEventListener('change', (e) => {
+        audio.playbackRate = parseFloat(e.target.value);
+    });
+    themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('light-theme');
+    });
+    addSongBtn.addEventListener('click', addSong);
 
-    // Auth logic
-    function showAuth(showLogin) {
-        document.getElementById('loginForm').style.display = showLogin ? 'block' : 'none';
-        document.getElementById('registerForm').style.display = showLogin ? 'none' : 'block';
-        loginError.innerText = '';
-        regError.innerText = '';
-    }
-    function register(email, pwd, confirm) {
-        if (!email || !pwd) { regError.innerText = "Email & password required"; return false; }
-        if (pwd !== confirm) { regError.innerText = "Passwords don't match"; return false; }
-        if (users.find(u => u.email === email)) { regError.innerText = "Email already exists"; return false; }
-        users.push({ email, password: pwd, likedSongs: [] });
-        localStorage.setItem("harmony_users", JSON.stringify(users));
-        regError.innerText = "Account created! Please login.";
-        setTimeout(() => showAuth(true), 1200);
-        return true;
-    }
-    function login(email, pwd) {
-        const user = users.find(u => u.email === email && u.password === pwd);
-        if (!user) { loginError.innerText = "Invalid credentials"; return false; }
-        currentUser = { email: user.email };
-        SONGS.forEach(s => s.liked = false);
-        if (user.likedSongs) user.likedSongs.forEach(id => { const s = SONGS.find(song => song.id === id); if(s) s.liked = true; });
-        currentPlaylist = 'all';
-        updateQueueAndIndex(true);
-        userEmailSpan.innerText = email.split('@')[0];
-        authPanel.style.display = 'none';
-        musicApp.classList.add('active');
-        return true;
-    }
-    function logout() {
-        currentUser = null;
-        audioPlayer.pause();
-        isPlaying = false;
-        musicApp.classList.remove('active');
-        authPanel.style.display = 'flex';
-        document.getElementById('loginEmail').value = '';
-        document.getElementById('loginPassword').value = '';
-        showAuth(true);
-    }
-    document.getElementById('loginBtn').onclick = () => login(document.getElementById('loginEmail').value.trim(), document.getElementById('loginPassword').value);
-    document.getElementById('registerBtn').onclick = () => register(document.getElementById('regEmail').value.trim(), document.getElementById('regPassword').value, document.getElementById('regConfirm').value);
-    document.getElementById('showRegister').onclick = () => showAuth(false);
-    document.getElementById('showLogin').onclick = () => showAuth(true);
-    document.getElementById('logoutBtn').onclick = logout;
+    // Light theme style
+    const styleLight = document.createElement('style');
+    styleLight.textContent = `
+        body.light-theme { background: #e9ecef; }
+        body.light-theme .music-dashboard { background: rgba(245,245,255,0.9); backdrop-filter: blur(12px); border-color: #ccc; }
+        body.light-theme .track-item, body.light-theme .add-song-card { background: rgba(0,0,0,0.05); }
+        body.light-theme .track-title { color: #000; }
+        body.light-theme .track-artist { color: #444; }
+        body.light-theme .ctrl-btn { background: #ddd; color: #111; }
+        body.light-theme .input-field input { background: #fff; color: #000; border-color: #bbb; }
+    `;
+    document.head.appendChild(styleLight);
 
-    // Init demo user jika belum ada
-    if (users.length === 0) {
-        users.push({ email: "demo@harmony.com", password: "123456", likedSongs: [1,4] });
-        localStorage.setItem("harmony_users", JSON.stringify(users));
+    // INIT
+    function init() {
+        renderPlaylist();
+        updateEmptyMsg();
+        if (playlist.length > 0) {
+            currentSongIndex = 0;
+            buildQueue();
+            loadSong(currentSongIndex);
+        } else {
+            nowPlayingTitleSpan.innerText = "✨ Tambah lagu dari Catbox";
+        }
     }
-    showAuth(true);
+    init();
 </script>
 </body>
 </html>
