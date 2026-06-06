@@ -430,6 +430,7 @@
                 <div class="playlist-section">
                     <div class="playlist-item" data-playlist="chill"><i class="fas fa-cloud-moon"></i>  Chill Mix</div>
                     <div class="playlist-item" data-playlist="focus"><i class="fas fa-brain"></i>  Focus Flow</div>
+                    <div class="playlist-item" data-playlist="trending"><i class="fas fa-fire"></i>  Trending Indo</div>
                 </div>
                 <div style="margin-top: 40px;"><div class="nav-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>Logout</span></div></div>
             </div>
@@ -460,20 +461,24 @@
 </div>
 
 <script>
-    // ---------- MUSIC DATABASE ----------
+    // ---------- MUSIC DATABASE (DENGAN LAGU BARU: MBG & SESI POTRET) ----------
     const SONGS = [
         { id: 1, title: "Blinding Lights", artist: "The Weeknd", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", duration: 210, liked: false, category: "chill" },
         { id: 2, title: "Levitating", artist: "Dua Lipa", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", duration: 203, liked: false, category: "focus" },
         { id: 3, title: "Save Your Tears", artist: "The Weeknd", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", duration: 215, liked: false, category: "chill" },
         { id: 4, title: "Stay", artist: "Kid LAROI", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", duration: 182, liked: false, category: "focus" },
         { id: 5, title: "Bad Habits", artist: "Ed Sheeran", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3", duration: 231, liked: false, category: "chill" },
-        { id: 6, title: "Peaches", artist: "Justin Bieber", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3", duration: 198, liked: false, category: "focus" }
+        { id: 6, title: "Peaches", artist: "Justin Bieber", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3", duration: 198, liked: false, category: "focus" },
+        // LAGU BARU: MAS BAHLIL GANTENG - MBG
+        { id: 7, title: "Mas Bahlil Ganteng", artist: "MBG", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3", duration: 225, liked: false, category: "trending" },
+        // LAGU BARU: ENAU - SESI POTRET
+        { id: 8, title: "Enau", artist: "Sesi Potret", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3", duration: 198, liked: false, category: "trending" }
     ];
 
     // Local storage users
     let users = JSON.parse(localStorage.getItem("harmony_users")) || [];
     let currentUser = null;
-    let currentPlaylist = "all"; // all, liked, chill, focus
+    let currentPlaylist = "all"; // all, liked, chill, focus, trending
     let currentTrackIndex = 0;
     let isPlaying = false;
     let audioPlayer = new Audio();
@@ -519,11 +524,12 @@
         }
     }
 
-    // Render tracks based on playlist (all, liked, chill, focus)
+    // Get filtered tracks berdasarkan playlist
     function getFilteredTracks() {
         if (currentPlaylist === "liked") return SONGS.filter(s => s.liked === true);
         if (currentPlaylist === "chill") return SONGS.filter(s => s.category === "chill");
         if (currentPlaylist === "focus") return SONGS.filter(s => s.category === "focus");
+        if (currentPlaylist === "trending") return SONGS.filter(s => s.category === "trending");
         return [...SONGS];
     }
 
@@ -531,9 +537,9 @@
         currentQueue = getFilteredTracks();
         if (resetIndex) currentTrackIndex = 0;
         if (currentQueue.length === 0) {
-            // no tracks
+            // tidak ada lagu
             nowPlayingTitle.innerText = "No tracks";
-            nowPlayingArtist.innerText = "Add liked songs";
+            nowPlayingArtist.innerText = "Add liked songs or explore";
             if (audioPlayer.src) audioPlayer.pause();
             isPlaying = false;
             playPauseBtn.innerHTML = '<i class="fas fa-play-circle" style="font-size:36px;"></i>';
@@ -547,6 +553,10 @@
     function renderTrackList() {
         const tracks = getFilteredTracks();
         trackContainer.innerHTML = '';
+        if (tracks.length === 0) {
+            trackContainer.innerHTML = '<div style="text-align:center; padding:40px; color:#aaa;"><i class="fas fa-heart-broken"></i> No songs in this playlist. Like some tracks!</div>';
+            return;
+        }
         tracks.forEach((track, idx) => {
             const trackDiv = document.createElement('div');
             trackDiv.className = 'track-item';
@@ -607,9 +617,16 @@
             audioPlayer.play().catch(e => console.log("play error", e));
         }
         updatePlayPauseIcon();
+        // Set duration metadata listener
         audioPlayer.addEventListener('loadedmetadata', () => {
-            durationTimeSpan.innerText = formatTime(audioPlayer.duration);
+            if (!isNaN(audioPlayer.duration)) {
+                durationTimeSpan.innerText = formatTime(audioPlayer.duration);
+            }
         });
+        // force update if duration already known
+        if (audioPlayer.readyState >= 1) {
+            durationTimeSpan.innerText = formatTime(audioPlayer.duration);
+        }
     }
 
     function playMusic() {
@@ -649,14 +666,14 @@
     }
 
     function formatTime(seconds) {
-        if (isNaN(seconds)) return "0:00";
+        if (isNaN(seconds) || !isFinite(seconds)) return "0:00";
         const mins = Math.floor(seconds / 60);
         const secs = Math.floor(seconds % 60);
         return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
     }
 
     audioPlayer.addEventListener('timeupdate', () => {
-        if (audioPlayer.duration) {
+        if (audioPlayer.duration && isFinite(audioPlayer.duration)) {
             const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
             progressFill.style.width = percent + '%';
             currentTimeSpan.innerText = formatTime(audioPlayer.currentTime);
@@ -668,7 +685,7 @@
     progressBarContainer.addEventListener('click', (e) => {
         const rect = progressBarContainer.getBoundingClientRect();
         const percent = (e.clientX - rect.left) / rect.width;
-        if (audioPlayer.duration) {
+        if (audioPlayer.duration && isFinite(audioPlayer.duration)) {
             audioPlayer.currentTime = percent * audioPlayer.duration;
         }
     });
@@ -680,16 +697,27 @@
     nextBtn.addEventListener('click', nextTrack);
     prevBtn.addEventListener('click', prevTrack);
 
-    function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+    function escapeHtml(str) { 
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m){
+            if(m==='&') return '&amp;'; 
+            if(m==='<') return '&lt;'; 
+            if(m==='>') return '&gt;'; 
+            return m;
+        }); 
+    }
 
     // Navigation & playlist switching
+    function setActiveNav(selector) {
+        document.querySelectorAll('.nav-item[data-nav]').forEach(n => n.classList.remove('active'));
+        if(selector) selector.classList.add('active');
+    }
     document.querySelectorAll('.nav-item[data-nav]').forEach(nav => {
         nav.addEventListener('click', (e) => {
             const navType = nav.getAttribute('data-nav');
             if (navType === 'home') currentPlaylist = 'all';
             else if (navType === 'liked') currentPlaylist = 'liked';
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            nav.classList.add('active');
+            setActiveNav(nav);
             updateQueueAndIndex(true);
         });
     });
@@ -698,7 +726,8 @@
             const pl = play.getAttribute('data-playlist');
             if(pl === 'chill') currentPlaylist = 'chill';
             if(pl === 'focus') currentPlaylist = 'focus';
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            if(pl === 'trending') currentPlaylist = 'trending';
+            document.querySelectorAll('.nav-item[data-nav]').forEach(n => n.classList.remove('active'));
             updateQueueAndIndex(true);
         });
     });
@@ -731,10 +760,10 @@
         const user = users.find(u => u.email === email && u.password === pwd);
         if (!user) { loginError.innerText = "Invalid credentials"; return false; }
         currentUser = { email: user.email };
-        // reset all liked flags
+        // reset semua liked flag
         SONGS.forEach(s => s.liked = false);
         if (user.likedSongs) user.likedSongs.forEach(id => { const s = SONGS.find(song => song.id === id); if(s) s.liked = true; });
-        // apply default queue
+        // default playlist home
         currentPlaylist = 'all';
         updateQueueAndIndex(true);
         userEmailSpan.innerText = email.split('@')[0];
@@ -771,9 +800,9 @@
 
     // initial state
     showAuth(true);
-    // preload test if any existing user in localstorage
+    // jika belum ada user, buat demo user dengan beberapa liked (termasuk lagu baru demo)
     if (users.length === 0) {
-        users.push({ email: "demo@harmony.com", password: "123456", likedSongs: [1,4] });
+        users.push({ email: "demo@harmony.com", password: "123456", likedSongs: [1,4,7] });
         localStorage.setItem("harmony_users", JSON.stringify(users));
     }
 </script>
